@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#24382f">
+  <title>PrecificaChef — Precificação culinária</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><div class="brand-icon">♨</div><div><h1>PrecificaChef</h1><p>Precificação culinária simples e local</p></div></div>
+    <span class="local-badge"><span></span> Dados salvos neste navegador</span>
+  </header>
+
+  <main class="shell">
+    <aside class="sidebar">
+      <button class="nav active" data-tab="precificacao"><span>▦</span> Precificação</button>
+      <button class="nav" data-tab="ingredientes"><span>▤</span> Ingredientes</button>
+      <button class="nav" data-tab="produtos"><span>◷</span> Produtos salvos</button>
+      <div class="sidebar-note"><strong>Como funciona</strong><p>Cadastre seus ingredientes uma vez. Depois, selecione-os nas receitas e informe apenas a quantidade usada.</p></div>
+    </aside>
+
+    <section class="content">
+      <section class="tab-panel" id="tab-precificacao">
+        <div class="page-heading"><div><p class="eyebrow">CUSTOS E RENTABILIDADE</p><h2>Precificar produto</h2><p class="muted">Preencha o que souber. Campos opcionais podem ficar vazios.</p></div><button class="btn btn-light" id="limpar-receita">Limpar formulário</button></div>
+        <div class="card">
+          <div class="section-heading"><h3>Informações do produto</h3><span class="optional">Campos flexíveis</span></div>
+          <div class="form-grid">
+            <label class="wide">Nome do produto<input id="produto-nome" placeholder="Ex.: Brownie de chocolate"></label>
+            <label>Categoria<select id="produto-categoria"><option>Doce</option><option>Salgado</option><option>Outro</option></select></label>
+            <label>Unidades prontas para venda<input id="rendimento" type="number" min="0" step="1" placeholder="Ex.: 20"></label>
+            <label>Tempo de preparo (min)<input id="tempo-preparo" type="number" min="0" step="1" placeholder="Opcional"></label>
+            <label>Observações<input id="produto-observacoes" placeholder="Tamanho, sabor, rendimento..."></label>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="section-heading"><div><h3>Ingredientes e custos</h3><p class="muted small">Selecione um ingrediente salvo ou adicione uma linha livre.</p></div><button class="btn btn-primary" id="adicionar-linha">＋ Adicionar linha</button></div>
+          <div id="linhas-ingredientes" class="ingredient-lines"></div>
+          <div class="empty-state" id="linhas-vazias">Nenhum ingrediente adicionado. Clique em “Adicionar linha”.</div>
+        </div>
+
+        <div class="card">
+          <div class="section-heading"><h3>Energia e outros custos</h3><span class="optional">Opcional</span></div>
+          <div class="form-grid">
+            <label>Equipamento<select id="equipamento"><option value="Forno elétrico">Forno elétrico</option><option value="Fogão elétrico">Fogão elétrico</option><option value="Batedeira">Batedeira</option><option value="Outro">Outro</option></select></label>
+            <label>Potência (watts)<input id="potencia" type="number" min="0" step="1" placeholder="Ex.: 1500"></label>
+            <label>Tempo ligado (min)<input id="tempo-equipamento" type="number" min="0" step="1" placeholder="Ex.: 30"></label>
+            <label>Tarifa elétrica (R$/kWh)<input id="tarifa" inputmode="decimal" placeholder="Ex.: 0,90"></label>
+            <label>Gás e outros custos por fornada (R$)<input id="outros-custos" inputmode="decimal" placeholder="Ex.: 2,00"></label>
+            <label>Taxas percentuais sobre a venda (%)<input id="taxas" type="number" min="0" max="100" step="0.1" placeholder="Ex.: 3,5"></label>
+            <label>Preço de venda por unidade (R$)<input id="preco-venda" inputmode="decimal" placeholder="Ex.: 5,99"></label>
+            <label>Margem desejada (%)<input id="margem-desejada" type="number" min="0" max="99.9" step="0.1" placeholder="Ex.: 40"></label>
+          </div>
+        </div>
+
+        <div class="results-grid">
+          <div class="result-card"><p>Custo por fornada</p><strong id="res-total">R$ 0,00</strong><small id="res-total-note">Informe os custos para calcular</small></div>
+          <div class="result-card"><p>Custo por unidade</p><strong id="res-unidade">—</strong><small>Com base no rendimento informado</small></div>
+          <div class="result-card"><p>Lucro estimado por unidade</p><strong id="res-lucro">—</strong><small>Após custo unitário e taxa percentual</small></div>
+          <div class="result-card result-highlight"><p>Preço sugerido</p><strong id="res-sugerido">—</strong><small>Baseado na margem desejada</small></div>
+        </div>
+        <div class="card result-details">
+          <div class="section-heading"><h3>Detalhamento do cálculo</h3><button class="btn btn-primary" id="salvar-produto">Salvar produto</button></div>
+          <div id="detalhamento" class="breakdown"><p class="muted">Os custos detalhados aparecerão aqui.</p></div>
+          <p class="footnote">A energia é estimada por potência × tempo × tarifa. O consumo real pode variar conforme o equipamento e seu ciclo de funcionamento. Campos vazios não são considerados custos confirmados; confira os itens pendentes antes de usar o preço final.</p>
+        </div>
+      </section>
+
+      <section class="tab-panel hidden" id="tab-ingredientes">
+        <div class="page-heading"><div><p class="eyebrow">BIBLIOTECA DE CUSTOS</p><h2>Ingredientes cadastrados</h2><p class="muted">Cadastre o preço e o conteúdo da embalagem uma vez para reutilizar em várias receitas.</p></div></div>
+        <div class="card">
+          <h3 id="form-ingrediente-titulo">Adicionar ingrediente</h3>
+          <form id="form-ingrediente">
+            <input id="ingrediente-id" type="hidden">
+            <div class="form-grid">
+              <label>Nome do ingrediente<input id="ingrediente-nome" required placeholder="Ex.: Chocolate meio amargo"></label>
+              <label>Marca / tipo (opcional)<input id="ingrediente-marca" placeholder="Ex.: 50% cacau"></label>
+              <label>Preço da embalagem (R$)<input id="ingrediente-preco" required inputmode="decimal" placeholder="Ex.: 39,90"></label>
+              <label>Conteúdo da embalagem<input id="ingrediente-conteudo" required type="number" min="0.001" step="any" placeholder="Ex.: 1000"></label>
+              <label>Unidade de conteúdo<select id="ingrediente-unidade"><option value="g">Gramas (g)</option><option value="ml">Mililitros (ml)</option><option value="un">Unidades (un.)</option></select></label>
+              <label>Observações (opcional)<input id="ingrediente-notas" placeholder="Ex.: comprar em promoção"></label>
+            </div>
+            <div class="form-actions"><button class="btn btn-primary" type="submit">Salvar ingrediente</button><button class="btn btn-light hidden" type="button" id="cancelar-edicao">Cancelar edição</button></div>
+          </form>
+        </div>
+        <div class="card">
+          <div class="section-heading"><h3>Minha biblioteca</h3><input id="buscar-ingrediente" class="search" placeholder="Pesquisar ingrediente..."></div>
+          <div id="lista-ingredientes" class="saved-list"></div>
+          <div id="ingredientes-vazios" class="empty-state">Nenhum ingrediente cadastrado ainda.</div>
+        </div>
+      </section>
+
+      <section class="tab-panel hidden" id="tab-produtos">
+        <div class="page-heading"><div><p class="eyebrow">HISTÓRICO</p><h2>Produtos salvos</h2><p class="muted">Receitas salvas neste navegador, com o custo calculado no momento em que foram salvas.</p></div></div>
+        <div class="card"><div id="lista-produtos" class="saved-list"></div><div id="produtos-vazios" class="empty-state">Você ainda não salvou nenhum produto.</div></div>
+      </section>
+      <footer>PrecificaChef · Protótipo local · Os dados ficam no armazenamento deste navegador.</footer>
+    </section>
+  </main>
+  <div id="toast" role="status" class="toast hidden"></div>
+  <script src="app.js"></script>
+</body>
+</html>
