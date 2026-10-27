@@ -7,11 +7,31 @@
   <title>PrecificaChef — Precificação culinária</title>
   <link rel="stylesheet" href="styles.css">
 </head>
-<body>
+<body data-theme="vanilla">
   <header class="topbar">
-    <div class="brand"><div class="brand-icon">♨</div><div><h1>PrecificaChef</h1><p>Precificação culinária simples e local</p></div></div>
-    <span class="local-badge"><span></span> Dados salvos neste navegador</span>
-  </header>
+    <div class="brand">
+      <div class="brand-icon">♨</div>
+      <div>
+        <h1>PrecificaChef</h1>
+        <p>Precificação culinária simples e local</p>
+      </div>
+    </div>
+  
+    <div class="theme-picker">
+      <label for="theme-select">🎨 Tema visual</label>
+      <select id="theme-select" aria-label="Escolher tema visual">
+        <option value="vanilla">🍦 Vanilla claro</option>
+        <option value="vanilla-dark">🌙 Vanilla escuro</option>
+        <option value="rosa">🍓 Rosa confeiteira</option>
+        <option value="laranja">🍊 Laranja confeiteira</option>
+        <option value="roxo">🧁 Roxo confeiteira</option>
+      </select>
+    </div>
+  
+    <span class="local-badge">
+      <span></span> Dados salvos neste navegador
+    </span>
+</header>
 
   <main class="shell">
     <aside class="sidebar">
