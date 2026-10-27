@@ -128,6 +128,7 @@
           ${line.mode !== "direct" ? `<input data-key="packSize" type="number" min="0" step="any" value="${escapeHtml(line.packSize)}" placeholder="Conteúdo da embalagem">` : ""}
           ${line.mode !== "direct" ? `<select data-key="packUnit">${unitOptions(line.packUnit)}</select>` : ""}
           <button class="text-toggle" type="button" data-action="toggle-mode">${line.mode === "direct" ? "Usar preço de embalagem" : "Usar custo direto por unidade"}</button>
+          ${line.mode !== "direct" ? `<button class="btn btn-light save-line-ingredient" type="button" data-action="save-ingredient">＋ Salvar nos ingredientes</button>` : ""}
         </label>
         <div><div class="line-cost">${lineCost(line) === null ? "Pendente" : money(lineCost(line))}</div><button type="button" class="icon-btn" data-action="remove" title="Remover linha" aria-label="Remover linha">×</button></div>`;
       row.querySelectorAll("[data-key]").forEach(input => {
@@ -147,10 +148,31 @@
       row.querySelector('[data-action="toggle-mode"]').addEventListener("click", () => {
         updateLine(line.id, "mode", line.mode === "direct" ? "ingredient" : "direct");
       });
+      const saveIngredientButton = row.querySelector('[data-action="save-ingredient"]');
+      if (saveIngredientButton) saveIngredientButton.addEventListener("click", () => saveLineIngredient(line.id));
       root.appendChild(row);
     }
     calculate();
   }
+  function saveLineIngredient(lineId) {
+    const line = lines.find(x => x.id === lineId);
+    if (!line) return;
+    const name = String(line.name || "").trim();
+    const price = parseMoney(line.freePrice);
+    const content = parseMoney(line.packSize);
+    const unit = line.packUnit || line.unit || "g";
+    if (!name || price === null || content === null || content <= 0) {
+      showToast("Preencha nome, preço da embalagem e conteúdo antes de salvar."); return;
+    }
+    const normalized = unit === "kg" ? { unit: "g", content: content * 1000 } : unit === "L" ? { unit: "ml", content: content * 1000 } : { unit, content };
+    const existing = state.ingredients.find(i => i.name.trim().toLocaleLowerCase("pt-BR") === name.toLocaleLowerCase("pt-BR"));
+    if (existing && !confirm(`Já existe “${existing.name}” nos ingredientes. Deseja atualizar o cadastro com estes dados?`)) return;
+    const ingredient = { id: existing ? existing.id : crypto.randomUUID(), name, brand: existing?.brand || "", price, content: normalized.content, unit: normalized.unit, notes: existing?.notes || "", updatedAt: new Date().toISOString() };
+    if (existing) Object.assign(existing, ingredient); else state.ingredients.push(ingredient);
+    persist(); renderIngredients(); renderLines();
+    showToast(existing ? "Ingrediente atualizado na biblioteca." : "Ingrediente salvo na biblioteca.");
+  }
+
   function unitOptions(selected) {
     return [["g","Gramas (g)"],["kg","Quilogramas (kg)"],["ml","Mililitros (ml)"],["L","Litros (L)"],["un","Unidades (un.)"]]
       .map(([v,l]) => `<option value="${v}"${selected === v ? " selected" : ""}>${l}</option>`).join("");
@@ -306,6 +328,60 @@
     $("taxas").value = p.taxes ?? ""; $("preco-venda").value = p.salePrice ?? ""; $("margem-desejada").value = p.desiredMargin ?? "";
     lines = (p.lines || []).map(l => ({ ...l, id: nextLineId++ })); renderLines(); switchTab("precificacao"); showToast("Produto carregado para edição.");
   }
+
+  function readDraft() {
+    return {
+      name: $("produto-nome").value, category: $("produto-categoria").value,
+      yieldCount: $("rendimento").value, prepMinutes: $("tempo-preparo").value,
+      notes: $("produto-observacoes").value, equipment: $("equipamento").value,
+      watts: $("potencia").value, equipmentMinutes: $("tempo-equipamento").value,
+      tariff: $("tarifa").value, otherCosts: $("outros-custos").value,
+      taxes: $("taxas").value, salePrice: $("preco-venda").value,
+      desiredMargin: $("margem-desejada").value, lines: lines.map(l => ({ ...l }))
+    };
+  }
+  function applyDraft(draft) {
+    if (!draft || typeof draft !== "object") return;
+    $("produto-nome").value = draft.name ?? ""; $("produto-categoria").value = draft.category || "Doce";
+    $("rendimento").value = draft.yieldCount ?? ""; $("tempo-preparo").value = draft.prepMinutes ?? "";
+    $("produto-observacoes").value = draft.notes ?? ""; $("equipamento").value = draft.equipment || "Forno elétrico";
+    $("potencia").value = draft.watts ?? ""; $("tempo-equipamento").value = draft.equipmentMinutes ?? "";
+    $("tarifa").value = draft.tariff ?? ""; $("outros-custos").value = draft.otherCosts ?? "";
+    $("taxas").value = draft.taxes ?? ""; $("preco-venda").value = draft.salePrice ?? ""; $("margem-desejada").value = draft.desiredMargin ?? "";
+    lines = Array.isArray(draft.lines) ? draft.lines.map(l => ({ ...l, id: nextLineId++ })) : [];
+    renderLines();
+  }
+  $("exportar-dados").addEventListener("click", () => {
+    const backup = { app: "PrecificaChef", version: 1, exportedAt: new Date().toISOString(), state, draft: readDraft() };
+    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: "application/json;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url; link.download = `precificachef-backup-${new Date().toISOString().slice(0,10)}.json`;
+    document.body.appendChild(link); link.click(); link.remove(); URL.revokeObjectURL(url);
+    showToast("Backup exportado. Guarde o arquivo JSON em local seguro.");
+  });
+  $("importar-dados").addEventListener("click", () => $("arquivo-backup").click());
+  $("arquivo-backup").addEventListener("change", async event => {
+    const file = event.target.files && event.target.files[0];
+    if (!file) return;
+    try {
+      const imported = JSON.parse(await file.text());
+      if (imported.app !== "PrecificaChef" || !imported.state || !Array.isArray(imported.state.ingredients) || !Array.isArray(imported.state.products)) {
+        throw new Error("Arquivo não reconhecido como backup válido do PrecificaChef.");
+      }
+      if (!confirm("Importar este backup substituirá os ingredientes e produtos salvos neste navegador. Exporte os dados atuais antes, se quiser mantê-los. Continuar?")) return;
+      state.ingredients = imported.state.ingredients;
+      state.products = imported.state.products;
+      persist();
+      if (imported.draft) applyDraft(imported.draft);
+      renderIngredients(); renderProducts(); renderLines();
+      showToast("Backup importado com sucesso.");
+    } catch (error) {
+      showToast(error.message || "Não foi possível importar esse arquivo JSON.");
+    } finally {
+      event.target.value = "";
+    }
+  });
 
   // Small input helper for the line editor.
   const style = document.createElement("style");

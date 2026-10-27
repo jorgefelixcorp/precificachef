@@ -8,6 +8,8 @@ Protótipo web de precificação de doces e salgados. Funciona sem IA, sem servi
 - **Biblioteca de ingredientes:** salva preço e conteúdo da embalagem para reutilizar em várias receitas.
 - **Produtos salvos:** guarda uma fotografia dos custos no momento em que a receita foi salva.
 - **Armazenamento local:** usa `localStorage` no navegador.
+- **Backup portátil:** exporta/importa ingredientes, produtos salvos e a receita atualmente em edição em um arquivo JSON.
+- **Salvar ingrediente pela receita:** botão para cadastrar na biblioteca os dados preenchidos em uma linha da precificação.
 - **Responsivo:** interface adaptada para computador e celular.
 
 ## Como testar localmente
@@ -15,8 +17,9 @@ Protótipo web de precificação de doces e salgados. Funciona sem IA, sem servi
 1. Extraia o ZIP.
 2. Abra `index.html` no Chrome.
 3. Cadastre ingredientes na aba **Ingredientes**.
-4. Vá para **Precificação**, adicione uma linha, selecione o ingrediente e informe a quantidade utilizada.
-5. Informe o rendimento e os outros custos conhecidos.
+4. Vá para **Precificação**, adicione uma linha, preencha os dados ou selecione um ingrediente e informe a quantidade utilizada.
+5. Para reutilizar um ingrediente preenchido na própria receita, clique em **＋ Salvar nos ingredientes**.
+6. Use **Exportar backup** para baixar os dados em JSON e **Importar backup** em outro dispositivo ou navegador.
 
 ## Como publicar no GitHub Pages
 
@@ -30,11 +33,17 @@ Protótipo web de precificação de doces e salgados. Funciona sem IA, sem servi
 ## Importante
 
 - Esta entrega é uma **aplicação web**, não uma extensão instalável do Chrome. É o caminho mais simples para hospedar no GitHub Pages.
-- Os dados ficam no `localStorage` do navegador e perfil usados. Eles não são sincronizados entre dispositivos e podem ser perdidos se os dados do site forem apagados. Faça backups antes de limpar os dados do navegador.
+- Os dados ficam no `localStorage` do navegador e perfil usados. Eles não são sincronizados automaticamente entre dispositivos; transfira-os manualmente com **Exportar backup** e **Importar backup**.
+- Importar um backup substitui os ingredientes e produtos salvos no navegador de destino. Exporte primeiro os dados atuais se quiser preservá-los.
+- O backup inclui os ingredientes, os produtos salvos e a receita atualmente em edição.
 - Ingredientes com unidades incompatíveis (por exemplo, embalagem em gramas e uso em ml) ficam pendentes em vez de converter automaticamente.
 - Campos incompletos não entram no cálculo. O resultado mostra aviso de custos parciais quando houver linhas pendentes.
 - A energia é estimada como `potência (W) × tempo (min) ÷ 60.000 × tarifa (R$/kWh)`. É uma estimativa; equipamentos como forno podem ciclar a resistência.
 - O preço sugerido considera custo unitário, margem desejada e taxa percentual informada. Não substitui avaliação de impostos, mão de obra, entrega, perdas ou despesas fixas que não forem cadastradas.
+
+## Salvar um ingrediente diretamente da receita
+
+Na aba **Precificação**, preencha o nome/descrição, o preço da embalagem e o conteúdo. Clique em **＋ Salvar nos ingredientes** para reutilizá-lo em outras receitas. Se já existir um ingrediente com o mesmo nome, o sistema perguntará se deseja atualizar o cadastro. Conteúdos em kg e L são convertidos para g e ml na biblioteca.
 
 ## Estrutura
 

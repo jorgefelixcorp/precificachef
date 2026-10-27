@@ -22,6 +22,10 @@
     </aside>
 
     <section class="content">
+      <div class="data-tools card">
+        <div><strong>Seus dados</strong><p class="muted small">Exporte um backup para transferir ingredientes, produtos e a receita em edição entre dispositivos.</p></div>
+        <div class="data-tools-actions"><button class="btn btn-light" id="exportar-dados" type="button">Exportar backup</button><button class="btn btn-light" id="importar-dados" type="button">Importar backup</button><input id="arquivo-backup" type="file" accept=".json,application/json" class="hidden"></div>
+      </div>
       <section class="tab-panel" id="tab-precificacao">
         <div class="page-heading"><div><p class="eyebrow">CUSTOS E RENTABILIDADE</p><h2>Precificar produto</h2><p class="muted">Preencha o que souber. Campos opcionais podem ficar vazios.</p></div><button class="btn btn-light" id="limpar-receita">Limpar formulário</button></div>
         <div class="card">
@@ -96,7 +100,7 @@
         <div class="page-heading"><div><p class="eyebrow">HISTÓRICO</p><h2>Produtos salvos</h2><p class="muted">Receitas salvas neste navegador, com o custo calculado no momento em que foram salvas.</p></div></div>
         <div class="card"><div id="lista-produtos" class="saved-list"></div><div id="produtos-vazios" class="empty-state">Você ainda não salvou nenhum produto.</div></div>
       </section>
-      <footer>PrecificaChef · Protótipo local · Os dados ficam no armazenamento deste navegador.</footer>
+      <footer>PrecificaChef · Os dados ficam neste navegador. Use Exportar backup para transferir ou proteger seus dados.</footer>
     </section>
   </main>
   <div id="toast" role="status" class="toast hidden"></div>
