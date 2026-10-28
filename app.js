@@ -29,8 +29,8 @@
     const THEME_COLORS = {
       vanilla: "#76543f",
       "vanilla-dark": "#6d5747",
-      rosa: "#bd507c",
-      laranja: "#c66a2e",
+      rosa: "#b84574",
+      laranja: "#a95a27",
       roxo: "#7956ac"
     };
 
@@ -38,6 +38,7 @@
     let nextLineId = 1;
     let lastCalculation = null;
     let toastTimer = null;
+    let loadNotice = null;
 
     const state = loadState();
 
@@ -249,7 +250,7 @@
       return element;
     }
 
-    function showToast(message) {
+    function showToast(message, duration = 2800) {
       const toast = $("toast");
       if (!toast) {
         console.info(message);
@@ -263,7 +264,7 @@
 
       toastTimer = setTimeout(() => {
         toast.classList.add("hidden");
-      }, 2800);
+      }, duration);
     }
 
     // =====================================================
@@ -462,37 +463,61 @@
     // =====================================================
 
     function loadState() {
+      const empty = () => ({ ingredients: [], products: [] });
+      let raw = null;
+
       try {
-        const raw = localStorage.getItem(STORAGE_KEY);
+        raw = localStorage.getItem(STORAGE_KEY);
+      } catch (error) {
+        console.warn("Armazenamento do navegador indisponível.", error);
 
-        if (!raw) {
-          return { ingredients: [], products: [] };
-        }
+        loadNotice =
+          "O navegador bloqueou o armazenamento local. Seus dados não serão mantidos ao fechar esta página.";
 
+        return empty();
+      }
+
+      if (!raw) return empty();
+
+      try {
         const parsed = JSON.parse(raw);
 
         // Compatível com o formato antigo e com o formato versionado.
         if (
-          !parsed ||
-          typeof parsed !== "object" ||
-          !Array.isArray(parsed.ingredients) ||
-          !Array.isArray(parsed.products)
+          parsed &&
+          typeof parsed === "object" &&
+          Array.isArray(parsed.ingredients) &&
+          Array.isArray(parsed.products)
         ) {
-          console.warn(
-            "Os dados locais não possuem uma estrutura reconhecida."
-          );
-
-          return { ingredients: [], products: [] };
+          return normalizeState(parsed);
         }
 
-        return normalizeState(parsed);
-      } catch (error) {
         console.warn(
-          "Não foi possível ler os dados locais.",
-          error
+          "Os dados locais não possuem uma estrutura reconhecida."
+        );
+      } catch (error) {
+        console.warn("Não foi possível ler os dados locais.", error);
+      }
+
+      keepUnreadableCopy(raw);
+
+      return empty();
+    }
+
+    // Antes de começar vazio, guarda uma cópia do que não pôde ser lido.
+    // Sem isso, o próximo salvamento apagaria esses dados para sempre.
+    function keepUnreadableCopy(raw) {
+      try {
+        localStorage.setItem(
+          `${STORAGE_KEY}_ilegivel_${Date.now()}`,
+          raw
         );
 
-        return { ingredients: [], products: [] };
+        loadNotice =
+          "Os dados salvos neste navegador não puderam ser lidos. Uma cópia foi mantida e o app começou vazio.";
+      } catch (error) {
+        loadNotice =
+          "Os dados salvos neste navegador não puderam ser lidos e podem ser sobrescritos ao salvar.";
       }
     }
 
@@ -518,6 +543,26 @@
       }
     }
 
+    // Aplica uma alteração e a desfaz se o navegador não conseguir salvar,
+    // para a tela nunca mostrar dados que não foram gravados.
+    function commit(mutate) {
+      const before = JSON.parse(
+        JSON.stringify({
+          ingredients: state.ingredients,
+          products: state.products
+        })
+      );
+
+      mutate();
+
+      if (persist()) return true;
+
+      state.ingredients = before.ingredients;
+      state.products = before.products;
+
+      return false;
+    }
+
     // =====================================================
     // 5. NAVEGAÇÃO
     // =====================================================
@@ -532,10 +577,15 @@
       if (!allowedTabs.has(tab)) return;
 
       document.querySelectorAll(".nav").forEach((button) => {
-        button.classList.toggle(
-          "active",
-          button.dataset.tab === tab
-        );
+        const isActive = button.dataset.tab === tab;
+
+        button.classList.toggle("active", isActive);
+
+        if (isActive) {
+          button.setAttribute("aria-current", "page");
+        } else {
+          button.removeAttribute("aria-current");
+        }
       });
 
       document.querySelectorAll(".tab-panel").forEach((panel) => {
@@ -728,6 +778,7 @@
             </select>
             <input
               data-key="name"
+              aria-label="Nome ou descrição do ingrediente"
               value="${escapeHtml(line.name)}"
               placeholder="Nome ou descrição"
               autocomplete="off"
@@ -769,6 +820,7 @@
             ${!isDirect ? `
               <input
                 data-key="packSize"
+                aria-label="Conteúdo da embalagem"
                 type="number"
                 min="0"
                 step="any"
@@ -814,34 +866,44 @@
           </div>
         `;
 
-        row.querySelectorAll("[data-key]").forEach((input) => {
-          input.addEventListener("change", () => {
-            updateLine(line.id, input.dataset.key, input.value);
-          });
+        // Atualiza o estado sem recriar a linha. Recriar no "change"
+        // fazia o campo seguinte perder o foco e o valor digitado,
+        // principalmente ao tocar de um campo para outro no celular.
+        const syncField = (input) => {
+          const found = lines.find((item) => item.id === line.id);
 
-          if (input.tagName === "INPUT") {
-            input.addEventListener("input", () => {
-              const found = lines.find(
-                (item) => item.id === line.id
-              );
+          if (!found) return;
 
-              if (!found) return;
+          found[input.dataset.key] = input.value;
 
-              found[input.dataset.key] = input.value;
+          calculate();
 
-              calculate();
+          const costElement = row.querySelector(".line-cost");
+          const currentCost = lineCost(found);
 
-              const costElement = row.querySelector(".line-cost");
-              const currentCost = lineCost(found);
-
-              if (costElement) {
-                costElement.textContent =
-                  currentCost === null
-                    ? "Pendente"
-                    : money(currentCost);
-              }
-            });
+          if (costElement) {
+            costElement.textContent =
+              currentCost === null
+                ? "Pendente"
+                : money(currentCost);
           }
+        };
+
+        row.querySelectorAll("[data-key]").forEach((input) => {
+          if (input.tagName === "INPUT") {
+            input.addEventListener("input", () => syncField(input));
+            input.addEventListener("change", () => syncField(input));
+            return;
+          }
+
+          input.addEventListener("change", () => {
+            // Só escolher um ingrediente salvo altera os outros campos.
+            if (input.dataset.key === "ingredientId") {
+              updateLine(line.id, "ingredientId", input.value);
+            } else {
+              syncField(input);
+            }
+          });
         });
 
         row.querySelector('[data-action="remove"]')
@@ -938,13 +1000,16 @@
         updatedAt: new Date().toISOString()
       };
 
-      if (existing) {
-        Object.assign(existing, ingredient);
-      } else {
-        state.ingredients.push(ingredient);
-      }
+      const saved = commit(() => {
+        if (existing) {
+          Object.assign(existing, ingredient);
+        } else {
+          state.ingredients.push(ingredient);
+        }
+      });
 
-      persist();
+      if (!saved) return;
+
       renderIngredients();
       renderLines();
 
@@ -1119,6 +1184,7 @@
       const unitElement = $("res-unidade");
       const profitElement = $("res-lucro");
       const suggestedElement = $("res-sugerido");
+      const unitNoteElement = $("res-unidade-note");
 
       if (totalElement) totalElement.textContent = money(total);
 
@@ -1136,6 +1202,12 @@
           unitCost === null ? "—" : money(unitCost);
       }
 
+      if (unitNoteElement) {
+        unitNoteElement.textContent = pending > 0
+          ? "Parcial: há linhas pendentes"
+          : "Com base no rendimento informado";
+      }
+
       if (profitElement) {
         profitElement.textContent =
           profit === null ? "—" : money(profit);
@@ -1143,7 +1215,7 @@
         profitElement.style.color =
           profit !== null && profit < 0
             ? "var(--danger)"
-            : "var(--green)";
+            : "var(--brand-text)";
       }
 
       if (suggestedElement) {
@@ -1183,7 +1255,7 @@
       breakdown.push([
         "Rendimento",
         yieldCount !== null && yieldCount > 0
-          ? `${fmt(yieldCount, 0)} unidade(s)`
+          ? `${fmt(yieldCount, 2)} unidade(s)`
           : "Não informado"
       ]);
 
@@ -1297,24 +1369,27 @@
         updatedAt: new Date().toISOString()
       };
 
-      if (id) {
-        const index = state.ingredients.findIndex(
-          (item) => item.id === id
-        );
+      const saved = commit(() => {
+        if (id) {
+          const index = state.ingredients.findIndex(
+            (item) => item.id === id
+          );
 
-        if (index >= 0) {
-          state.ingredients[index] = ingredient;
+          if (index >= 0) {
+            state.ingredients[index] = ingredient;
+          } else {
+            state.ingredients.push(ingredient);
+          }
         } else {
           state.ingredients.push(ingredient);
         }
+      });
 
-        showToast("Ingrediente atualizado.");
-      } else {
-        state.ingredients.push(ingredient);
-        showToast("Ingrediente salvo.");
-      }
+      // Em caso de falha o formulário é mantido para o usuário tentar de novo.
+      if (!saved) return;
 
-      persist();
+      showToast(id ? "Ingrediente atualizado." : "Ingrediente salvo.");
+
       resetIngredientForm();
       renderIngredients();
       renderLines();
@@ -1456,11 +1531,14 @@
             return;
           }
 
-          state.ingredients = state.ingredients.filter(
-            (item) => item.id !== ingredient.id
-          );
+          const removed = commit(() => {
+            state.ingredients = state.ingredients.filter(
+              (item) => item.id !== ingredient.id
+            );
+          });
 
-          persist();
+          if (!removed) return;
+
           renderIngredients();
           renderLines();
 
@@ -1506,9 +1584,8 @@
         savedAt: new Date().toISOString()
       };
 
-      state.products.unshift(product);
+      if (!commit(() => state.products.unshift(product))) return;
 
-      persist();
       renderProducts();
 
       showToast("Produto salvo no histórico.");
@@ -1526,9 +1603,11 @@
         const savedDate = new Date(product.savedAt)
           .toLocaleDateString("pt-BR");
 
+        const partial = calculation.pending > 0 ? " (parcial)" : "";
+
         const yieldLabel =
           product.yieldCount !== null
-            ? fmt(product.yieldCount, 0)
+            ? fmt(product.yieldCount, 2)
             : "não informado";
 
         return `
@@ -1542,8 +1621,8 @@
               <p>
                 Salvo em ${escapeHtml(savedDate)}
                 · Rendimento: ${escapeHtml(yieldLabel)}
-                · Custo/fornada: ${money(calculation.total)}
-                · Custo/unidade: ${money(calculation.unitCost)}
+                · Custo/fornada: ${money(calculation.total)}${partial}
+                · Custo/unidade: ${money(calculation.unitCost)}${partial}
                 · Venda: ${
                   product.salePrice === null
                     ? "não informada"
@@ -1584,16 +1663,48 @@
         button.addEventListener("click", () => {
           if (!confirm("Excluir este produto salvo?")) return;
 
-          state.products = state.products.filter(
-            (product) => product.id !== button.dataset.deleteProduct
-          );
+          const removed = commit(() => {
+            state.products = state.products.filter(
+              (product) => product.id !== button.dataset.deleteProduct
+            );
+          });
 
-          persist();
+          if (!removed) return;
+
           renderProducts();
 
           showToast("Produto removido.");
         });
       });
+    }
+
+    function hasRecipeData() {
+      const filled = [
+        "produto-nome",
+        "rendimento",
+        "tempo-preparo",
+        "produto-observacoes",
+        "potencia",
+        "tempo-equipamento",
+        "tarifa",
+        "outros-custos",
+        "taxas",
+        "preco-venda",
+        "margem-desejada"
+      ].some((id) => ($(id)?.value || "").trim() !== "");
+
+      const filledLine = lines.some((line) => {
+        return Boolean(
+          line.name ||
+          line.ingredientId ||
+          line.quantity ||
+          line.freePrice ||
+          line.directCost ||
+          line.packSize
+        );
+      });
+
+      return filled || filledLine;
     }
 
     function loadProduct(id) {
@@ -1602,6 +1713,15 @@
       );
 
       if (!product) return;
+
+      if (
+        hasRecipeData() &&
+        !confirm(
+          "Carregar este produto vai substituir a receita que está em edição. Continuar?"
+        )
+      ) {
+        return;
+      }
 
       setValue("produto-nome", product.name);
       setSelectValue(
@@ -1767,16 +1887,58 @@
           );
         }
 
-        const imported = JSON.parse(await file.text());
+        let imported;
+
+        try {
+          imported = JSON.parse(await file.text());
+        } catch (error) {
+          throw new Error(
+            "O arquivo não é um JSON válido. Escolha um backup exportado pelo PrecificaChef."
+          );
+        }
+
+        // Formato atual: { app, version, state, draft }.
+        // Também aceita arquivos que guardavam { ingredients, products }
+        // diretamente. Todo registro é validado de qualquer forma.
+        let source = null;
 
         if (
-          !imported ||
-          typeof imported !== "object" ||
-          imported.app !== "PrecificaChef" ||
-          ![1, 2].includes(imported.version) ||
-          !imported.state ||
-          !Array.isArray(imported.state.ingredients) ||
-          !Array.isArray(imported.state.products)
+          imported &&
+          typeof imported === "object" &&
+          !Array.isArray(imported)
+        ) {
+          if (
+            imported.app === "PrecificaChef" &&
+            imported.state &&
+            typeof imported.state === "object"
+          ) {
+            if (
+              Number.isInteger(imported.version) &&
+              imported.version > BACKUP_VERSION
+            ) {
+              throw new Error(
+                "Este backup foi criado por uma versão mais nova do PrecificaChef. Atualize o app e tente de novo."
+              );
+            }
+
+            if (
+              Number.isInteger(imported.version) &&
+              imported.version >= 1
+            ) {
+              source = imported.state;
+            }
+          } else if (
+            Array.isArray(imported.ingredients) &&
+            Array.isArray(imported.products)
+          ) {
+            source = imported;
+          }
+        }
+
+        if (
+          !source ||
+          !Array.isArray(source.ingredients) ||
+          !Array.isArray(source.products)
         ) {
           throw new Error(
             "Arquivo não reconhecido como backup válido do PrecificaChef."
@@ -1785,45 +1947,53 @@
 
         const diagnostics = {};
 
-        const importedState = normalizeState(
-          imported.state,
-          diagnostics
-        );
+        const importedState = normalizeState(source, diagnostics);
 
-        const droppedCount =
-          diagnostics.invalidIngredients +
-          diagnostics.invalidProducts;
+        const totalInFile =
+          source.ingredients.length + source.products.length;
 
-        if (
-          imported.state.ingredients.length > 0 &&
-          importedState.ingredients.length === 0 &&
-          imported.state.products.length > 0 &&
-          importedState.products.length === 0
-        ) {
+        const totalValid =
+          importedState.ingredients.length +
+          importedState.products.length;
+
+        // Nunca substitui os dados atuais por um arquivo sem nenhum
+        // registro aproveitável.
+        if (totalInFile > 0 && totalValid === 0) {
           throw new Error(
             "O arquivo não contém registros válidos para importar."
           );
         }
 
+        const droppedCount =
+          diagnostics.invalidIngredients +
+          diagnostics.invalidProducts;
+
         let message =
-          "A importação substituirá os ingredientes e produtos salvos neste navegador. ";
+          "Importar este backup vai SUBSTITUIR os dados atuais deste navegador.\n\n";
 
         message +=
-          "Exporte os dados atuais antes, caso queira manter uma cópia. ";
+          `Atualmente: ${state.ingredients.length} ingrediente(s) e ${state.products.length} produto(s).\n`;
+
+        message +=
+          `No arquivo: ${importedState.ingredients.length} ingrediente(s) e ${importedState.products.length} produto(s).\n`;
 
         if (droppedCount > 0) {
           message +=
-            `${droppedCount} registro(s) inválido(s) serão ignorados. `;
+            `${droppedCount} registro(s) inválido(s) serão ignorados.\n`;
         }
 
-        message += "Continuar?";
+        message +=
+          "\nExporte os dados atuais antes se quiser guardar uma cópia. Continuar?";
 
         if (!confirm(message)) return;
 
-        state.ingredients = importedState.ingredients;
-        state.products = importedState.products;
+        const saved = commit(() => {
+          state.ingredients = importedState.ingredients;
+          state.products = importedState.products;
+        });
 
-        persist();
+        // Se o navegador não conseguiu gravar, nada foi alterado.
+        if (!saved) return;
 
         if (imported.draft) {
           applyDraft(imported.draft);
@@ -1839,7 +2009,8 @@
 
         showToast(
           error.message ||
-          "Não foi possível importar esse arquivo JSON."
+          "Não foi possível importar esse arquivo JSON.",
+          5000
         );
       } finally {
         input.value = "";
@@ -1922,6 +2093,8 @@
     renderIngredients();
     renderProducts();
     addLine();
+
+    if (loadNotice) showToast(loadNotice, 9000);
   }
 
   // Funciona mesmo se o script for movido para o <head>.

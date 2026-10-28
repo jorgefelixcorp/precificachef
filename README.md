@@ -34,7 +34,8 @@ Protótipo web de precificação de doces e salgados. Funciona sem IA, sem servi
 
 - Esta entrega é uma **aplicação web**, não uma extensão instalável do Chrome. É o caminho mais simples para hospedar no GitHub Pages.
 - Os dados ficam no `localStorage` do navegador e perfil usados. Eles não são sincronizados automaticamente entre dispositivos; transfira-os manualmente com **Exportar backup** e **Importar backup**.
-- Importar um backup substitui os ingredientes e produtos salvos no navegador de destino. Exporte primeiro os dados atuais se quiser preservá-los.
+- Importar um backup substitui os ingredientes e produtos salvos no navegador de destino. O app mostra quantos registros existem hoje e quantos há no arquivo antes de pedir confirmação. Arquivos inválidos, sem registros aproveitáveis ou cancelados não alteram nada, e se o navegador não conseguir gravar, a importação é desfeita e não é anunciada como concluída.
+- Aceita backups das versões 1 e 2 e arquivos antigos no formato `{ "ingredients": [...], "products": [...] }`.
 - O backup inclui os ingredientes, os produtos salvos e a receita atualmente em edição.
 - Ingredientes com unidades incompatíveis (por exemplo, embalagem em gramas e uso em ml) ficam pendentes em vez de converter automaticamente.
 - Campos incompletos não entram no cálculo. O resultado mostra aviso de custos parciais quando houver linhas pendentes.
@@ -50,3 +51,10 @@ Na aba **Precificação**, preencha o nome/descrição, o preço da embalagem e 
 - `index.html` — interface e abas.
 - `styles.css` — aparência responsiva.
 - `app.js` — armazenamento, cadastro e fórmulas.
+
+## Testes
+
+Os testes ficam em `tests/` e não fazem parte do site publicado.
+
+- `node tests/contrast.test.mjs` — confere o contraste (4,5:1) dos cinco temas. Não precisa de dependências.
+- `node tests/e2e.test.mjs` — abre o app no Chromium e testa fórmulas, ingredientes, receitas, backup, temas, telas de 320/375/390 px, teclado e escape de HTML. Requer `npm install --no-save playwright` e `npx playwright install chromium`.

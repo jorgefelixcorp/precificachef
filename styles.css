@@ -10,6 +10,8 @@
 
   --green: #24382f;
   --green-2: #315344;
+  --green-hover: #1b2b23;
+  --brand-text: #24382f;
   --accent: #d8e7dd;
 
   --bg: #f4f6f3;
@@ -34,9 +36,6 @@
 
   --control-height: 42px;
   --content-max: 1440px;
-
-  --focus-ring: 0 0 0 3px
-    color-mix(in srgb, var(--green-2) 24%, transparent);
 }
 
 /* 2. Temas */
@@ -44,6 +43,8 @@
 body[data-theme="vanilla"] {
   --green: #76543f;
   --green-2: #947158;
+  --green-hover: #624634;
+  --brand-text: #76543f;
   --accent: #f2e4d3;
 
   --bg: #fff8ef;
@@ -52,7 +53,7 @@ body[data-theme="vanilla"] {
   --field: #ffffff;
 
   --text: #382b23;
-  --muted: #817164;
+  --muted: #716358;
   --label: #624c3d;
 
   --line: #eadbc9;
@@ -69,6 +70,8 @@ body[data-theme="vanilla"] {
 body[data-theme="vanilla-dark"] {
   --green: #6d5747;
   --green-2: #a68a72;
+  --green-hover: #5e4b3d;
+  --brand-text: #b09782;
   --accent: #392d26;
 
   --bg: #191512;
@@ -94,8 +97,10 @@ body[data-theme="vanilla-dark"] {
 }
 
 body[data-theme="rosa"] {
-  --green: #bd507c;
+  --green: #b84574;
   --green-2: #d56891;
+  --green-hover: #9e3b64;
+  --brand-text: #ab406c;
   --accent: #fbe0eb;
 
   --bg: #fff4f8;
@@ -104,7 +109,7 @@ body[data-theme="rosa"] {
   --field: #ffffff;
 
   --text: #552b3e;
-  --muted: #956b7d;
+  --muted: #805c6c;
   --label: #713b52;
 
   --line: #f1ccdc;
@@ -121,8 +126,10 @@ body[data-theme="rosa"] {
 }
 
 body[data-theme="laranja"] {
-  --green: #c66a2e;
+  --green: #a95a27;
   --green-2: #e18a48;
+  --green-hover: #924e22;
+  --brand-text: #9f5425;
   --accent: #ffe5ce;
 
   --bg: #fff5e9;
@@ -131,7 +138,7 @@ body[data-theme="laranja"] {
   --field: #ffffff;
 
   --text: #55351f;
-  --muted: #94745a;
+  --muted: #7c614c;
   --label: #724b2e;
 
   --line: #f0d4b8;
@@ -150,6 +157,8 @@ body[data-theme="laranja"] {
 body[data-theme="roxo"] {
   --green: #7956ac;
   --green-2: #9472c5;
+  --green-hover: #684995;
+  --brand-text: #7854ab;
   --accent: #eee3ff;
 
   --bg: #f8f4ff;
@@ -158,7 +167,7 @@ body[data-theme="roxo"] {
   --field: #ffffff;
 
   --text: #382b50;
-  --muted: #817096;
+  --muted: #6f6082;
   --label: #54416f;
 
   --line: #dfd0f4;
@@ -248,15 +257,16 @@ svg {
   a,
   [tabindex]:not([tabindex="-1"])
 ):focus-visible {
-  outline: 3px solid var(--green-2);
+  outline: 3px solid var(--brand-text);
   outline-offset: 3px;
 }
 
 input:focus-visible,
 select:focus-visible,
 textarea:focus-visible {
-  border-color: var(--green-2);
-  box-shadow: var(--focus-ring);
+  border-color: var(--brand-text);
+  box-shadow: 0 0 0 3px
+    color-mix(in srgb, var(--brand-text) 24%, transparent);
 }
 
 /* 5. Cabeçalho */
@@ -310,7 +320,7 @@ textarea:focus-visible {
 
 .brand p {
   margin: 3px 0 0;
-  color: rgba(255, 255, 255, 0.82);
+  color: rgba(255, 255, 255, 0.92);
   font-size: 12px;
 }
 
@@ -319,7 +329,7 @@ textarea:focus-visible {
   align-items: center;
   gap: 7px;
 
-  color: rgba(255, 255, 255, 0.88);
+  color: rgba(255, 255, 255, 0.92);
   font-size: 11px;
 }
 
@@ -425,7 +435,7 @@ textarea:focus-visible {
 .nav:hover,
 .nav.active {
   background: var(--accent);
-  color: var(--green);
+  color: var(--brand-text);
 }
 
 .sidebar-note {
@@ -442,7 +452,7 @@ textarea:focus-visible {
 }
 
 .sidebar-note strong {
-  color: var(--green);
+  color: var(--brand-text);
 }
 
 .sidebar-note p {
@@ -473,7 +483,7 @@ textarea:focus-visible {
 .eyebrow {
   margin: 0;
 
-  color: var(--green-2);
+  color: var(--brand-text);
   font-size: 10px;
   font-weight: 800;
   letter-spacing: 1.4px;
@@ -694,7 +704,7 @@ input[type="radio"] {
 
   border: 0;
   background: transparent;
-  color: var(--green-2);
+  color: var(--brand-text);
 
   font-size: 12px;
   font-weight: 650;
@@ -772,7 +782,7 @@ input[type="radio"] {
 .ingredient-row .line-cost {
   padding: 10px 0;
 
-  color: var(--green);
+  color: var(--brand-text);
   font-size: 12px;
   font-weight: 800;
 
@@ -844,7 +854,7 @@ input[type="radio"] {
 }
 
 .result-highlight strong {
-  color: var(--green);
+  color: var(--brand-text);
 }
 
 .result-details {
@@ -900,7 +910,7 @@ input[type="radio"] {
   border-radius: 7px;
 
   background: var(--accent);
-  color: var(--green);
+  color: var(--brand-text);
 
   font-size: 11px;
   font-weight: 750;
@@ -1036,28 +1046,40 @@ body::after {
   left: 1%;
 }
 
+/*
+ * Segunda declaração de content: o trecho após "/" é o texto alternativo
+ * (vazio), para leitores de tela não lerem os enfeites. Navegadores sem
+ * esse recurso ignoram a segunda linha e usam a primeira.
+ */
+
 body[data-theme="rosa"]::before {
   content: "🍓 ♡";
+  content: "🍓 ♡" / "";
 }
 
 body[data-theme="rosa"]::after {
-  content: "🧁 ✿";
+  content: "🎀 🧁";
+  content: "🎀 🧁" / "";
 }
 
 body[data-theme="laranja"]::before {
   content: "🍊 ✧";
+  content: "🍊 ✧" / "";
 }
 
 body[data-theme="laranja"]::after {
   content: "🥄 ♡";
+  content: "🥄 ♡" / "";
 }
 
 body[data-theme="roxo"]::before {
-  content: "🧁 ✿";
+  content: "💐 ✿";
+  content: "💐 ✿" / "";
 }
 
 body[data-theme="roxo"]::after {
-  content: "💜 ✧";
+  content: "🌸 ✧";
+  content: "🌸 ✧" / "";
 }
 
 /* Garante que o conteúdo apareça acima das decorações */
@@ -1078,11 +1100,11 @@ footer {
 @media (hover: hover) and (pointer: fine) {
   .nav:hover {
     background: var(--accent);
-    color: var(--green);
+    color: var(--brand-text);
   }
 
   .btn-primary:hover {
-    background: var(--green-2);
+    background: var(--green-hover);
   }
 
   .btn-light:hover,
@@ -1117,6 +1139,11 @@ footer {
     flex: 0 0 auto;
     width: auto;
     white-space: nowrap;
+  }
+
+  /* O contorno externo seria cortado pela rolagem da barra. */
+  .nav:focus-visible {
+    outline-offset: -3px;
   }
 
   .sidebar-note {

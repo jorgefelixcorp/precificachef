@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#24382f">
+  <meta name="theme-color" content="#76543f">
   <title>PrecificaChef — Precificação culinária</title>
   <link rel="stylesheet" href="styles.css">
 </head>
@@ -35,7 +35,7 @@
 
   <main class="shell">
     <aside class="sidebar">
-      <button class="nav active" data-tab="precificacao"><span>▦</span> Precificação</button>
+      <button class="nav active" data-tab="precificacao" aria-current="page"><span>▦</span> Precificação</button>
       <button class="nav" data-tab="ingredientes"><span>▤</span> Ingredientes</button>
       <button class="nav" data-tab="produtos"><span>◷</span> Produtos salvos</button>
       <div class="sidebar-note"><strong>Como funciona</strong><p>Cadastre seus ingredientes uma vez. Depois, selecione-os nas receitas e informe apenas a quantidade usada.</p></div>
@@ -81,7 +81,7 @@
 
         <div class="results-grid">
           <div class="result-card"><p>Custo por fornada</p><strong id="res-total">R$ 0,00</strong><small id="res-total-note">Informe os custos para calcular</small></div>
-          <div class="result-card"><p>Custo por unidade</p><strong id="res-unidade">—</strong><small>Com base no rendimento informado</small></div>
+          <div class="result-card"><p>Custo por unidade</p><strong id="res-unidade">—</strong><small id="res-unidade-note">Com base no rendimento informado</small></div>
           <div class="result-card"><p>Lucro estimado por unidade</p><strong id="res-lucro">—</strong><small>Após custo unitário e taxa percentual</small></div>
           <div class="result-card result-highlight"><p>Preço sugerido</p><strong id="res-sugerido">—</strong><small>Baseado na margem desejada</small></div>
         </div>
