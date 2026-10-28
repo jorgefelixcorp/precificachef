@@ -9,7 +9,10 @@ Protótipo web de precificação de doces e salgados. Funciona sem IA, sem servi
 - **Produtos salvos:** guarda uma fotografia dos custos no momento em que a receita foi salva.
 - **Armazenamento local:** usa `localStorage` no navegador.
 - **Backup portátil:** exporta/importa ingredientes, produtos salvos e a receita atualmente em edição em um arquivo JSON.
-- **Salvar ingrediente pela receita:** botão para cadastrar na biblioteca os dados preenchidos em uma linha da precificação.
+- **Salvar ingredientes pela receita:** salva uma linha (ou todas de uma vez) na biblioteca. Se o ingrediente já existir com outro preço ou conteúdo, pergunta se deseja **substituir**, **adicionar como novo** ou **ignorar**.
+- **Embalagem (opcional):** custo de embalagem por unidade, somado ao custo da fornada quando o rendimento é informado.
+- **Categorias:** Doce, Salgado, Pães e Outro.
+- **Temas:** cinco temas, cada um com papel de parede e detalhes próprios.
 - **Responsivo:** interface adaptada para computador e celular.
 
 ## Como testar localmente
@@ -44,13 +47,22 @@ Protótipo web de precificação de doces e salgados. Funciona sem IA, sem servi
 
 ## Salvar um ingrediente diretamente da receita
 
-Na aba **Precificação**, preencha o nome/descrição, o preço da embalagem e o conteúdo. Clique em **＋ Salvar nos ingredientes** para reutilizá-lo em outras receitas. Se já existir um ingrediente com o mesmo nome, o sistema perguntará se deseja atualizar o cadastro. Conteúdos em kg e L são convertidos para g e ml na biblioteca.
+Na aba **Precificação**, preencha o nome/descrição, o preço da embalagem e o conteúdo. Clique em **＋ Salvar nos ingredientes** (na linha) ou em **＋ Salvar itens nos ingredientes** (para todas as linhas). Se já existir um ingrediente com o mesmo nome e dados diferentes, aparece a pergunta: substituir, adicionar como novo ou ignorar (com a opção de repetir a escolha para os próximos). Linhas idênticas ao cadastro não geram pergunta. Conteúdos em kg e L são convertidos para g e ml na biblioteca.
+
+## Custo de embalagem
+
+O campo **Embalagem por unidade (R$)** fica junto dos custos de energia e é opcional. O valor é multiplicado pelo rendimento e somado ao custo da fornada. Sem o rendimento informado, a embalagem não entra no cálculo e o detalhamento avisa isso.
 
 ## Estrutura
 
 - `index.html` — interface e abas.
-- `styles.css` — aparência responsiva.
+- `styles.css` — aparência responsiva e temas.
 - `app.js` — armazenamento, cadastro e fórmulas.
+- `manifest.webmanifest` — permite "adicionar à tela inicial" com o ícone do app.
+- `icons/` — ícones:
+  - `icon.svg` — ícone principal (chapéu de chef, livro de receitas e pena), usado como favicon e no cabeçalho;
+  - `icon-maskable.svg` — mesma arte com margem de segurança para ícones adaptativos do Android;
+  - `png/` — versões prontas: `favicon-16.png`, `favicon-32.png`, `apple-touch-icon-180.png` (iPhone), `icon-192.png`, `icon-512.png` e `icon-maskable-512.png`.
 
 ## Testes
 

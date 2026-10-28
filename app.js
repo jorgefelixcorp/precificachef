@@ -344,6 +344,7 @@
         ingredientTotal: finiteNumberOrNull(input.ingredientTotal),
         energy: finiteNumberOrNull(input.energy),
         other: finiteNumberOrNull(input.other),
+        packaging: finiteNumberOrNull(input.packaging),
         total: finiteNumberOrNull(input.total),
         unitCost: finiteNumberOrNull(input.unitCost),
         profit: finiteNumberOrNull(input.profit),
@@ -391,6 +392,7 @@
         equipmentMinutes: nonNegativeNumber(input.equipmentMinutes),
         tariff: parseMoney(input.tariff),
         otherCosts: parseMoney(input.otherCosts),
+        packaging: parseMoney(input.packaging),
         taxes: nonNegativeNumber(input.taxes),
         salePrice: parseMoney(input.salePrice),
         desiredMargin: nonNegativeNumber(input.desiredMargin),
@@ -938,9 +940,10 @@
       calculate();
     }
 
-    function saveLineIngredient(lineId) {
-      const line = lines.find((item) => item.id === lineId);
-      if (!line) return;
+    // Dados de ingrediente a partir de uma linha da receita (ou null).
+    // Conteúdos em kg e L são convertidos para g e ml.
+    function ingredientFromLine(line) {
+      if (!line || line.mode === "direct") return null;
 
       const name = textValue(line.name).trim();
       const price = parseMoney(line.freePrice);
@@ -953,10 +956,7 @@
         content === null ||
         content <= 0
       ) {
-        showToast(
-          "Preencha nome, preço da embalagem e conteúdo antes de salvar."
-        );
-        return;
+        return null;
       }
 
       let normalized = { unit, content };
@@ -971,54 +971,224 @@
         !Number.isFinite(normalized.content) ||
         normalized.content <= 0
       ) {
-        showToast("O conteúdo informado é inválido.");
-        return;
+        return null;
       }
 
-      const existing = state.ingredients.find((ingredient) => {
-        return ingredient.name.trim().toLocaleLowerCase("pt-BR") ===
-          name.toLocaleLowerCase("pt-BR");
-      });
-
-      if (
-        existing &&
-        !confirm(
-          `Já existe "${existing.name}" nos ingredientes. Deseja atualizar o cadastro?`
-        )
-      ) {
-        return;
-      }
-
-      const ingredient = {
-        id: existing ? existing.id : createId("ingredient"),
-        name,
-        brand: existing?.brand || "",
+      return {
+        name: name.slice(0, 200),
         price,
         content: normalized.content,
-        unit: normalized.unit,
-        notes: existing?.notes || "",
-        updatedAt: new Date().toISOString()
+        unit: normalized.unit
       };
-
-      const saved = commit(() => {
-        if (existing) {
-          Object.assign(existing, ingredient);
-        } else {
-          state.ingredients.push(ingredient);
-        }
-      });
-
-      if (!saved) return;
-
-      renderIngredients();
-      renderLines();
-
-      showToast(
-        existing
-          ? "Ingrediente atualizado na biblioteca."
-          : "Ingrediente salvo na biblioteca."
-      );
     }
+
+    // Pergunta o que fazer com um ingrediente que já existe.
+    // Resolve com { choice: "replace" | "add" | "skip", all: boolean }.
+    function askConflict(name, remaining) {
+      const dialog = $("dialogo-conflito");
+
+      if (!dialog || typeof dialog.showModal !== "function") {
+        // Navegadores sem <dialog>: pergunta simples.
+        return Promise.resolve({
+          choice: confirm(
+            `Já existe "${name}" nos ingredientes. Substituir o cadastro?`
+          ) ? "replace" : "skip",
+          all: false
+        });
+      }
+
+      const allBox = $("dlg-todos");
+
+      $("dlg-texto").textContent =
+        `"${name}" já está nos ingredientes com outro preço ou conteúdo. O que deseja fazer?`;
+
+      allBox.checked = false;
+      $("dlg-todos-label").classList.toggle("hidden", remaining < 1);
+
+      return new Promise((resolve) => {
+        const finish = (choice) => {
+          dialog.removeEventListener("cancel", onCancel);
+
+          if (dialog.open) dialog.close();
+
+          resolve({ choice, all: allBox.checked });
+        };
+
+        // Esc ou voltar do celular = ignorar.
+        const onCancel = (event) => {
+          event.preventDefault();
+          finish("skip");
+        };
+
+        dialog.addEventListener("cancel", onCancel);
+
+        dialog.querySelectorAll("[data-choice]").forEach((button) => {
+          button.onclick = () => finish(button.dataset.choice);
+        });
+
+        dialog.showModal();
+        $("dlg-substituir").focus();
+      });
+    }
+
+    let savingToLibrary = false;
+
+    async function saveLinesToLibrary(lineIds) {
+      if (savingToLibrary) return;
+
+      savingToLibrary = true;
+
+      try {
+        const targets = lineIds
+          .map((id) => lines.find((line) => line.id === id))
+          .filter(Boolean);
+
+        // Trabalha numa cópia e só grava no fim, de uma vez.
+        const working = JSON.parse(JSON.stringify(state.ingredients));
+        const now = () => new Date().toISOString();
+        const sameName = (a, b) =>
+          a.trim().toLocaleLowerCase("pt-BR") ===
+          b.trim().toLocaleLowerCase("pt-BR");
+
+        const result = {
+          added: 0,
+          replaced: 0,
+          skipped: 0,
+          unchanged: 0,
+          incomplete: 0
+        };
+
+        let remembered = null;
+
+        for (let i = 0; i < targets.length; i++) {
+          const line = targets[i];
+          const data = ingredientFromLine(line);
+
+          if (!data) {
+            const hasData = Boolean(
+              line.name ||
+              line.ingredientId ||
+              line.quantity ||
+              line.freePrice ||
+              line.directCost ||
+              line.packSize
+            );
+
+            if (hasData) result.incomplete++;
+            continue;
+          }
+
+          const matches = working.filter((item) =>
+            sameName(item.name, data.name)
+          );
+
+          if (matches.length === 0) {
+            working.push({
+              id: createId("ingredient"),
+              ...data,
+              brand: "",
+              notes: "",
+              updatedAt: now()
+            });
+
+            result.added++;
+            continue;
+          }
+
+          const identical = matches.some((item) =>
+            item.price === data.price &&
+            item.content === data.content &&
+            item.unit === data.unit
+          );
+
+          if (identical) {
+            result.unchanged++;
+            continue;
+          }
+
+          let choice = remembered;
+
+          if (!choice) {
+            const answer = await askConflict(
+              matches[0].name,
+              targets.length - i - 1
+            );
+
+            choice = answer.choice;
+
+            if (answer.all) remembered = choice;
+          }
+
+          if (choice === "replace") {
+            Object.assign(matches[0], { ...data, updatedAt: now() });
+            result.replaced++;
+          } else if (choice === "add") {
+            working.push({
+              id: createId("ingredient"),
+              ...data,
+              brand: "",
+              notes: "",
+              updatedAt: now()
+            });
+
+            result.added++;
+          } else {
+            result.skipped++;
+          }
+        }
+
+        const parts = [];
+
+        if (result.added) parts.push(`${result.added} adicionado(s)`);
+        if (result.replaced) parts.push(`${result.replaced} substituído(s)`);
+        if (result.skipped) parts.push(`${result.skipped} ignorado(s)`);
+        if (result.unchanged) parts.push(`${result.unchanged} já estava(m) igual`);
+        if (result.incomplete) parts.push(`${result.incomplete} linha(s) incompleta(s) não salva(s)`);
+
+        const summary = parts.length
+          ? `Ingredientes: ${parts.join(", ")}.`
+          : "Nenhuma linha com dados para salvar.";
+
+        if (result.added + result.replaced > 0) {
+          const saved = commit(() => {
+            state.ingredients = working;
+          });
+
+          if (!saved) return;
+
+          renderIngredients();
+          renderLines();
+        }
+
+        showToast(summary, 4500);
+      } finally {
+        savingToLibrary = false;
+      }
+    }
+
+    function saveLineIngredient(lineId) {
+      const line = lines.find((item) => item.id === lineId);
+
+      if (!line) return;
+
+      if (!ingredientFromLine(line)) {
+        showToast(
+          "Preencha nome, preço da embalagem e conteúdo antes de salvar."
+        );
+        return;
+      }
+
+      saveLinesToLibrary([lineId]);
+    }
+
+    on("salvar-todos-ingredientes", "click", () => {
+      if (lines.length === 0) {
+        showToast("Adicione linhas à receita primeiro.");
+        return;
+      }
+
+      saveLinesToLibrary(lines.map((line) => line.id));
+    });
 
     on("adicionar-linha", "click", () => addLine());
 
@@ -1040,6 +1210,7 @@
         "tempo-equipamento",
         "tarifa",
         "outros-custos",
+        "embalagem",
         "taxas",
         "preco-venda",
         "margem-desejada"
@@ -1067,6 +1238,7 @@
       "tempo-equipamento",
       "tarifa",
       "outros-custos",
+      "embalagem",
       "taxas",
       "preco-venda",
       "margem-desejada"
@@ -1136,10 +1308,22 @@
 
       const other = parseMoney($("outros-custos")?.value);
 
+      // Embalagem: custo por unidade vendida. Só entra na fornada
+      // quando o rendimento é conhecido.
+      const packagingPerUnit = parseMoney($("embalagem")?.value);
+
+      const packagingTotal =
+        packagingPerUnit !== null &&
+        yieldCount !== null &&
+        yieldCount > 0
+          ? packagingPerUnit * yieldCount
+          : null;
+
       const total =
         ingredientTotal +
         (energy ?? 0) +
-        (other ?? 0);
+        (other ?? 0) +
+        (packagingTotal ?? 0);
 
       const unitCost = yieldCount !== null && yieldCount > 0
         ? total / yieldCount
@@ -1250,6 +1434,15 @@
         other === null ? "Não informado" : money(other)
       ]);
 
+      breakdown.push([
+        "Embalagem (por unidade × rendimento)",
+        packagingPerUnit === null
+          ? "Não informada"
+          : packagingTotal === null
+            ? `${money(packagingPerUnit)} por unidade (informe o rendimento para somar)`
+            : `${money(packagingPerUnit)} × ${fmt(yieldCount, 2)} = ${money(packagingTotal)}`
+      ]);
+
       breakdown.push(["Custo conhecido por fornada", money(total)]);
 
       breakdown.push([
@@ -1294,6 +1487,12 @@
         );
       }
 
+      if (packagingPerUnit !== null && packagingTotal === null) {
+        warnings.push(
+          "A embalagem só entra no custo quando o rendimento (unidades prontas) for informado."
+        );
+      }
+
       if (!taxRateValid) {
         warnings.push(
           "A taxa informada ultrapassa 100%. Revise esse percentual antes de calcular lucro ou preço sugerido."
@@ -1319,6 +1518,7 @@
         ingredientTotal,
         energy,
         other,
+        packaging: packagingTotal,
         total,
         unitCost,
         profit,
@@ -1577,6 +1777,7 @@
         equipmentMinutes: num("tempo-equipamento"),
         tariff: parseMoney($("tarifa")?.value),
         otherCosts: parseMoney($("outros-custos")?.value),
+        packaging: parseMoney($("embalagem")?.value),
         taxes: num("taxas"),
         salePrice: parseMoney($("preco-venda")?.value),
         desiredMargin: num("margem-desejada"),
@@ -1744,6 +1945,7 @@
       setValue("tempo-equipamento", product.equipmentMinutes ?? "");
       setValue("tarifa", product.tariff ?? "");
       setValue("outros-custos", product.otherCosts ?? "");
+      setValue("embalagem", product.packaging ?? "");
       setValue("taxas", product.taxes ?? "");
       setValue("preco-venda", product.salePrice ?? "");
       setValue("margem-desejada", product.desiredMargin ?? "");
@@ -1772,6 +1974,7 @@
         equipmentMinutes: $("tempo-equipamento")?.value || "",
         tariff: $("tarifa")?.value || "",
         otherCosts: $("outros-custos")?.value || "",
+        packaging: $("embalagem")?.value || "",
         taxes: $("taxas")?.value || "",
         salePrice: $("preco-venda")?.value || "",
         desiredMargin: $("margem-desejada")?.value || "",
@@ -1809,6 +2012,7 @@
       setValue("tempo-equipamento", draft.equipmentMinutes);
       setValue("tarifa", draft.tariff);
       setValue("outros-custos", draft.otherCosts);
+      setValue("embalagem", draft.packaging);
       setValue("taxas", draft.taxes);
       setValue("preco-venda", draft.salePrice);
       setValue("margem-desejada", draft.desiredMargin);

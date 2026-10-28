@@ -5,12 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#76543f">
   <title>PrecificaChef — Precificação culinária</title>
+  <link rel="icon" type="image/svg+xml" href="icons/icon.svg">
+  <link rel="icon" type="image/png" sizes="32x32" href="icons/png/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="icons/png/favicon-16.png">
+  <link rel="apple-touch-icon" href="icons/png/apple-touch-icon-180.png">
+  <link rel="manifest" href="manifest.webmanifest">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body data-theme="vanilla">
   <header class="topbar">
     <div class="brand">
-      <div class="brand-icon">♨</div>
+      <div class="brand-icon"><img src="icons/icon.svg" alt="" width="44" height="44"></div>
       <div>
         <h1>PrecificaChef</h1>
         <p>Precificação culinária simples e local</p>
@@ -52,7 +57,7 @@
           <div class="section-heading"><h3>Informações do produto</h3><span class="optional">Campos flexíveis</span></div>
           <div class="form-grid">
             <label class="wide">Nome do produto<input id="produto-nome" placeholder="Ex.: Brownie de chocolate"></label>
-            <label>Categoria<select id="produto-categoria"><option>Doce</option><option>Salgado</option><option>Outro</option></select></label>
+            <label>Categoria<select id="produto-categoria"><option>Doce</option><option>Salgado</option><option>Pães</option><option>Outro</option></select></label>
             <label>Unidades prontas para venda<input id="rendimento" type="number" min="0" step="1" placeholder="Ex.: 20"></label>
             <label>Tempo de preparo (min)<input id="tempo-preparo" type="number" min="0" step="1" placeholder="Opcional"></label>
             <label>Observações<input id="produto-observacoes" placeholder="Tamanho, sabor, rendimento..."></label>
@@ -60,7 +65,7 @@
         </div>
 
         <div class="card">
-          <div class="section-heading"><div><h3>Ingredientes e custos</h3><p class="muted small">Selecione um ingrediente salvo ou adicione uma linha livre.</p></div><button class="btn btn-primary" id="adicionar-linha">＋ Adicionar linha</button></div>
+          <div class="section-heading"><div><h3>Ingredientes e custos</h3><p class="muted small">Selecione um ingrediente salvo ou adicione uma linha livre.</p></div><div class="section-actions"><button class="btn btn-light" id="salvar-todos-ingredientes" type="button">＋ Salvar itens nos ingredientes</button><button class="btn btn-primary" id="adicionar-linha">＋ Adicionar linha</button></div></div>
           <div id="linhas-ingredientes" class="ingredient-lines"></div>
           <div class="empty-state" id="linhas-vazias">Nenhum ingrediente adicionado. Clique em “Adicionar linha”.</div>
         </div>
@@ -73,6 +78,7 @@
             <label>Tempo ligado (min)<input id="tempo-equipamento" type="number" min="0" step="1" placeholder="Ex.: 30"></label>
             <label>Tarifa elétrica (R$/kWh)<input id="tarifa" inputmode="decimal" placeholder="Ex.: 0,90"></label>
             <label>Gás e outros custos por fornada (R$)<input id="outros-custos" inputmode="decimal" placeholder="Ex.: 2,00"></label>
+            <label>Embalagem por unidade (R$)<input id="embalagem" inputmode="decimal" placeholder="Opcional. Ex.: 0,80"></label>
             <label>Taxas percentuais sobre a venda (%)<input id="taxas" type="number" min="0" max="100" step="0.1" placeholder="Ex.: 3,5"></label>
             <label>Preço de venda por unidade (R$)<input id="preco-venda" inputmode="decimal" placeholder="Ex.: 5,99"></label>
             <label>Margem desejada (%)<input id="margem-desejada" type="number" min="0" max="99.9" step="0.1" placeholder="Ex.: 40"></label>
@@ -123,6 +129,18 @@
       <footer>PrecificaChef · Os dados ficam neste navegador. Use Exportar backup para transferir ou proteger seus dados.</footer>
     </section>
   </main>
+  <dialog id="dialogo-conflito" class="dialog" aria-labelledby="dlg-titulo" aria-describedby="dlg-texto">
+    <form method="dialog" class="dialog-body" id="dlg-form">
+      <h3 id="dlg-titulo">Ingrediente já cadastrado</h3>
+      <p id="dlg-texto" class="muted"></p>
+      <label class="dialog-check hidden" id="dlg-todos-label"><input type="checkbox" id="dlg-todos"> Fazer o mesmo para os próximos repetidos</label>
+      <div class="dialog-actions">
+        <button class="btn btn-primary" type="button" data-choice="replace" id="dlg-substituir">Substituir</button>
+        <button class="btn btn-light" type="button" data-choice="add" id="dlg-adicionar">Adicionar como novo</button>
+        <button class="btn btn-light" type="button" data-choice="skip" id="dlg-ignorar">Ignorar</button>
+      </div>
+    </form>
+  </dialog>
   <div id="toast" role="status" class="toast hidden"></div>
   <script src="app.js"></script>
 </body>

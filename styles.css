@@ -64,7 +64,7 @@ body[data-theme="vanilla"] {
   --pattern: rgba(164, 119, 79, 0.12);
 
   color-scheme: light;
-  background-image: none;
+  --bg-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140' viewBox='0 0 140 140'%3E%3Cg opacity='0.9'%3E%3Cg transform='translate(30 28) rotate(10) scale(1)'%3E%3Ccircle cx='0' cy='-5.5' r='4.2' fill='%23ecd9bf' transform='rotate(0)'/%3E%3Ccircle cx='0' cy='-5.5' r='4.2' fill='%23ecd9bf' transform='rotate(72)'/%3E%3Ccircle cx='0' cy='-5.5' r='4.2' fill='%23ecd9bf' transform='rotate(144)'/%3E%3Ccircle cx='0' cy='-5.5' r='4.2' fill='%23ecd9bf' transform='rotate(216)'/%3E%3Ccircle cx='0' cy='-5.5' r='4.2' fill='%23ecd9bf' transform='rotate(288)'/%3E%3Ccircle r='2.6' fill='%23d9b98f'/%3E%3C/g%3E%3Cg transform='translate(104 44) rotate(0) scale(1)'%3E%3Ccircle r='2.2' fill='%23eedcc6'/%3E%3C/g%3E%3Cg transform='translate(66 92) rotate(-15) scale(0.85)'%3E%3Ccircle cx='0' cy='-5.5' r='4.2' fill='%23f1e2cc' transform='rotate(0)'/%3E%3Ccircle cx='0' cy='-5.5' r='4.2' fill='%23f1e2cc' transform='rotate(72)'/%3E%3Ccircle cx='0' cy='-5.5' r='4.2' fill='%23f1e2cc' transform='rotate(144)'/%3E%3Ccircle cx='0' cy='-5.5' r='4.2' fill='%23f1e2cc' transform='rotate(216)'/%3E%3Ccircle cx='0' cy='-5.5' r='4.2' fill='%23f1e2cc' transform='rotate(288)'/%3E%3Ccircle r='2.6' fill='%23dcc09a'/%3E%3C/g%3E%3Cg transform='translate(116 118) rotate(0) scale(1)'%3E%3Ccircle r='2.2' fill='%23e9d5b8'/%3E%3C/g%3E%3Cg transform='translate(16 112) rotate(0) scale(1)'%3E%3Ccircle r='2.2' fill='%23eedcc6'/%3E%3C/g%3E%3Cg transform='translate(78 16) rotate(0) scale(0.7)'%3E%3Cpath d='M0 -9 L2.2 -2.2 L9 0 L2.2 2.2 L0 9 L-2.2 2.2 L-9 0 L-2.2 -2.2Z' fill='%23efdfc7'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
 }
 
 body[data-theme="vanilla-dark"] {
@@ -91,9 +91,7 @@ body[data-theme="vanilla-dark"] {
   --pattern: rgba(227, 190, 157, 0.055);
 
   color-scheme: dark;
-  background-image:
-    radial-gradient(var(--pattern) 1px, transparent 1px);
-  background-size: 24px 24px;
+  --bg-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140' viewBox='0 0 140 140'%3E%3Cg opacity='1'%3E%3Cg transform='translate(28 30) rotate(0) scale(0.8)'%3E%3Cpath d='M0 -9 L2.2 -2.2 L9 0 L2.2 2.2 L0 9 L-2.2 2.2 L-9 0 L-2.2 -2.2Z' fill='%234a3b30'/%3E%3C/g%3E%3Cg transform='translate(100 24) rotate(0) scale(1)'%3E%3Ccircle r='2.2' fill='%233f332a'/%3E%3C/g%3E%3Cg transform='translate(70 84) rotate(0) scale(0.6)'%3E%3Cpath d='M0 -9 L2.2 -2.2 L9 0 L2.2 2.2 L0 9 L-2.2 2.2 L-9 0 L-2.2 -2.2Z' fill='%2343362c'/%3E%3C/g%3E%3Cg transform='translate(120 110) rotate(0) scale(1)'%3E%3Ccircle r='2.2' fill='%233f332a'/%3E%3C/g%3E%3Cg transform='translate(14 104) rotate(0) scale(1)'%3E%3Ccircle r='2.2' fill='%2343362c'/%3E%3C/g%3E%3Cg transform='translate(104 70) rotate(0) scale(1)'%3E%3Ccircle r='2.2' fill='%233a2f27'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
 }
 
 body[data-theme="rosa"] {
@@ -120,9 +118,10 @@ body[data-theme="rosa"] {
   --pattern: rgba(219, 105, 153, 0.19);
 
   color-scheme: light;
-  background-image:
-    radial-gradient(var(--pattern) 1px, transparent 1px);
-  background-size: 22px 22px;
+  --bg-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140' viewBox='0 0 140 140'%3E%3Cg opacity='0.62'%3E%3Cg transform='translate(28 26) rotate(-12) scale(1)'%3E%3Cpath d='M0 12 C-14 4 -12 -10 0 -9 C12 -10 14 4 0 12Z' fill='%23f48fb1'/%3E%3Cpath d='M-7 -9 L0 -15 L7 -9 L0 -6Z' fill='%238fc79a'/%3E%3Ccircle cx='-4' cy='-2' r='1.2' fill='%23fff'/%3E%3Ccircle cx='3' cy='-3' r='1.2' fill='%23fff'/%3E%3Ccircle cx='0' cy='3' r='1.2' fill='%23fff'/%3E%3Ccircle cx='-5' cy='4' r='1.2' fill='%23fff'/%3E%3Ccircle cx='5' cy='3' r='1.2' fill='%23fff'/%3E%3C/g%3E%3Cg transform='translate(100 36) rotate(8) scale(0.9)'%3E%3Cpath d='M0 0 C-12 -9 -17 -2 -14 7 C-10 4 -4 3 0 0Z' fill='%23f7a8c4'/%3E%3Cpath d='M0 0 C12 -9 17 -2 14 7 C10 4 4 3 0 0Z' fill='%23f7a8c4'/%3E%3Cpath d='M-2 2 L-8 13 L-2 10Z M2 2 L8 13 L2 10Z' fill='%23f2a0bd'/%3E%3Ccircle r='3.2' fill='%23ee7ea6'/%3E%3C/g%3E%3Cg transform='translate(62 88) rotate(10) scale(0.9)'%3E%3Cpath d='M0 7 C-11 -2 -7 -10 0 -4 C7 -10 11 -2 0 7Z' fill='%23f9bdd2'/%3E%3C/g%3E%3Cg transform='translate(116 114) rotate(22) scale(0.8)'%3E%3Cpath d='M0 12 C-14 4 -12 -10 0 -9 C12 -10 14 4 0 12Z' fill='%23f48fb1'/%3E%3Cpath d='M-7 -9 L0 -15 L7 -9 L0 -6Z' fill='%238fc79a'/%3E%3Ccircle cx='-4' cy='-2' r='1.2' fill='%23fff'/%3E%3Ccircle cx='3' cy='-3' r='1.2' fill='%23fff'/%3E%3Ccircle cx='0' cy='3' r='1.2' fill='%23fff'/%3E%3Ccircle cx='-5' cy='4' r='1.2' fill='%23fff'/%3E%3Ccircle cx='5' cy='3' r='1.2' fill='%23fff'/%3E%3C/g%3E%3Cg transform='translate(22 112) rotate(-10) scale(0.8)'%3E%3Cpath d='M0 0 C-12 -9 -17 -2 -14 7 C-10 4 -4 3 0 0Z' fill='%23f7a8c4'/%3E%3Cpath d='M0 0 C12 -9 17 -2 14 7 C10 4 4 3 0 0Z' fill='%23f7a8c4'/%3E%3Cpath d='M-2 2 L-8 13 L-2 10Z M2 2 L8 13 L2 10Z' fill='%23f2a0bd'/%3E%3Ccircle r='3.2' fill='%23ee7ea6'/%3E%3C/g%3E%3Cg transform='translate(78 14) rotate(0) scale(1)'%3E%3Ccircle r='2.2' fill='%23f6b6cd'/%3E%3C/g%3E%3Cg transform='translate(132 78) rotate(0) scale(1)'%3E%3Ccircle r='2.2' fill='%23f6b6cd'/%3E%3C/g%3E%3Cg transform='translate(8 64) rotate(0) scale(1)'%3E%3Ccircle r='2.2' fill='%23f6b6cd'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  --radius-sm: 12px;
+  --radius-md: 16px;
+  --radius-lg: 22px;
 }
 
 body[data-theme="laranja"] {
@@ -149,9 +148,10 @@ body[data-theme="laranja"] {
   --pattern: rgba(217, 129, 63, 0.17);
 
   color-scheme: light;
-  background-image:
-    radial-gradient(var(--pattern) 1px, transparent 1px);
-  background-size: 24px 24px;
+  --bg-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140' viewBox='0 0 140 140'%3E%3Cg opacity='0.62'%3E%3Cg transform='translate(28 28) rotate(0) scale(1)'%3E%3Ccircle r='11' fill='%23ffb066'/%3E%3Ccircle r='8.6' fill='%23ffe3c2'/%3E%3Cpath d='M0 0 L0 -8.6 M0 0 L7.4 -4.3 M0 0 L7.4 4.3 M0 0 L0 8.6 M0 0 L-7.4 4.3 M0 0 L-7.4 -4.3' stroke='%23ffb066' stroke-width='1.4'/%3E%3C/g%3E%3Cg transform='translate(98 34) rotate(0) scale(0.95)'%3E%3Ccircle r='10.5' fill='%23f0c48c'/%3E%3Ccircle cx='-4' cy='-3' r='1.9' fill='%23b98355'/%3E%3Ccircle cx='3' cy='-4' r='1.9' fill='%23b98355'/%3E%3Ccircle cx='-1' cy='3' r='1.9' fill='%23b98355'/%3E%3Ccircle cx='5' cy='3' r='1.6' fill='%23b98355'/%3E%3C/g%3E%3Cg transform='translate(60 88) rotate(0) scale(0.95)'%3E%3Cpath d='M0 -9 L2.2 -2.2 L9 0 L2.2 2.2 L0 9 L-2.2 2.2 L-9 0 L-2.2 -2.2Z' fill='%23ffd28a'/%3E%3C/g%3E%3Cg transform='translate(112 112) rotate(0) scale(0.8)'%3E%3Ccircle r='11' fill='%23ffb066'/%3E%3Ccircle r='8.6' fill='%23ffe3c2'/%3E%3Cpath d='M0 0 L0 -8.6 M0 0 L7.4 -4.3 M0 0 L7.4 4.3 M0 0 L0 8.6 M0 0 L-7.4 4.3 M0 0 L-7.4 -4.3' stroke='%23ffb066' stroke-width='1.4'/%3E%3C/g%3E%3Cg transform='translate(22 108) rotate(-20) scale(0.8)'%3E%3Cpath d='M0 0 C8 -11 19 -9 21 0 C13 5 4 5 0 0Z' fill='%23a8d5a2'/%3E%3Cpath d='M2 0 L17 -2' stroke='%2386b982' stroke-width='1'/%3E%3C/g%3E%3Cg transform='translate(76 14) rotate(0) scale(1)'%3E%3Ccircle r='2.2' fill='%23ffcf9a'/%3E%3C/g%3E%3Cg transform='translate(132 74) rotate(0) scale(1)'%3E%3Ccircle r='2.2' fill='%23ffcf9a'/%3E%3C/g%3E%3Cg transform='translate(8 62) rotate(0) scale(1)'%3E%3Ccircle r='2.2' fill='%23ffcf9a'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  --radius-sm: 12px;
+  --radius-md: 16px;
+  --radius-lg: 22px;
 }
 
 body[data-theme="roxo"] {
@@ -178,9 +178,10 @@ body[data-theme="roxo"] {
   --pattern: rgba(145, 108, 195, 0.17);
 
   color-scheme: light;
-  background-image:
-    radial-gradient(var(--pattern) 1px, transparent 1px);
-  background-size: 23px 23px;
+  --bg-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140' viewBox='0 0 140 140'%3E%3Cg opacity='0.62'%3E%3Cg transform='translate(28 28) rotate(0) scale(1)'%3E%3Cellipse cx='0' cy='-7' rx='4.6' ry='7' fill='%23c3a8ee' transform='rotate(0)'/%3E%3Cellipse cx='0' cy='-7' rx='4.6' ry='7' fill='%23c3a8ee' transform='rotate(72)'/%3E%3Cellipse cx='0' cy='-7' rx='4.6' ry='7' fill='%23c3a8ee' transform='rotate(144)'/%3E%3Cellipse cx='0' cy='-7' rx='4.6' ry='7' fill='%23c3a8ee' transform='rotate(216)'/%3E%3Cellipse cx='0' cy='-7' rx='4.6' ry='7' fill='%23c3a8ee' transform='rotate(288)'/%3E%3Ccircle r='3.4' fill='%23ffe08a'/%3E%3C/g%3E%3Cg transform='translate(100 34) rotate(15) scale(0.95)'%3E%3Cpath d='M0 14 L0 -12' stroke='%23a98bd8' stroke-width='1.6'/%3E%3Cellipse cx='-3.5' cy='-8' rx='2.2' ry='3.6' fill='%23b79be0' transform='rotate(-25 -3.5 -8)'/%3E%3Cellipse cx='3.5' cy='-5' rx='2.2' ry='3.6' fill='%23b79be0' transform='rotate(25 3.5 -5)'/%3E%3Cellipse cx='-3.5' cy='-1' rx='2.2' ry='3.6' fill='%23b79be0' transform='rotate(-25 -3.5 -1)'/%3E%3Cellipse cx='3.5' cy='2' rx='2.2' ry='3.6' fill='%23b79be0' transform='rotate(25 3.5 2)'/%3E%3Cellipse cx='0' cy='-13' rx='2.2' ry='3.6' fill='%23b79be0' transform='rotate(0 0 -13)'/%3E%3C/g%3E%3Cg transform='translate(62 90) rotate(0) scale(0.95)'%3E%3Cpath d='M0 -9 L2.2 -2.2 L9 0 L2.2 2.2 L0 9 L-2.2 2.2 L-9 0 L-2.2 -2.2Z' fill='%23d4c0f5'/%3E%3C/g%3E%3Cg transform='translate(114 112) rotate(20) scale(0.8)'%3E%3Cellipse cx='0' cy='-7' rx='4.6' ry='7' fill='%23cdb6f2' transform='rotate(0)'/%3E%3Cellipse cx='0' cy='-7' rx='4.6' ry='7' fill='%23cdb6f2' transform='rotate(72)'/%3E%3Cellipse cx='0' cy='-7' rx='4.6' ry='7' fill='%23cdb6f2' transform='rotate(144)'/%3E%3Cellipse cx='0' cy='-7' rx='4.6' ry='7' fill='%23cdb6f2' transform='rotate(216)'/%3E%3Cellipse cx='0' cy='-7' rx='4.6' ry='7' fill='%23cdb6f2' transform='rotate(288)'/%3E%3Ccircle r='3.4' fill='%23ffe08a'/%3E%3C/g%3E%3Cg transform='translate(20 112) rotate(-15) scale(0.8)'%3E%3Cpath d='M0 14 L0 -12' stroke='%23a98bd8' stroke-width='1.6'/%3E%3Cellipse cx='-3.5' cy='-8' rx='2.2' ry='3.6' fill='%23b79be0' transform='rotate(-25 -3.5 -8)'/%3E%3Cellipse cx='3.5' cy='-5' rx='2.2' ry='3.6' fill='%23b79be0' transform='rotate(25 3.5 -5)'/%3E%3Cellipse cx='-3.5' cy='-1' rx='2.2' ry='3.6' fill='%23b79be0' transform='rotate(-25 -3.5 -1)'/%3E%3Cellipse cx='3.5' cy='2' rx='2.2' ry='3.6' fill='%23b79be0' transform='rotate(25 3.5 2)'/%3E%3Cellipse cx='0' cy='-13' rx='2.2' ry='3.6' fill='%23b79be0' transform='rotate(0 0 -13)'/%3E%3C/g%3E%3Cg transform='translate(78 14) rotate(0) scale(1)'%3E%3Ccircle r='2.2' fill='%23d7c5f6'/%3E%3C/g%3E%3Cg transform='translate(132 76) rotate(0) scale(1)'%3E%3Ccircle r='2.2' fill='%23d7c5f6'/%3E%3C/g%3E%3Cg transform='translate(8 62) rotate(0) scale(1)'%3E%3Ccircle r='2.2' fill='%23d7c5f6'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  --radius-sm: 12px;
+  --radius-md: 16px;
+  --radius-lg: 22px;
 }
 
 /* 3. Reset e estrutura global */
@@ -203,6 +204,8 @@ body {
   margin: 0;
 
   background-color: var(--bg);
+  background-image: var(--bg-pattern, none);
+  background-size: 140px 140px;
   color: var(--text);
 
   font-family:
@@ -308,6 +311,16 @@ textarea:focus-visible {
   background: rgba(255, 255, 255, 0.11);
 
   font-size: 24px;
+}
+
+.brand-icon {
+  overflow: hidden;
+}
+
+.brand-icon img {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 
 .brand h1 {
@@ -551,6 +564,64 @@ h4 {
 
 .section-heading > * {
   min-width: 0;
+}
+
+.section-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* Diálogo "substituir / adicionar / ignorar" */
+
+.dialog {
+  width: min(440px, calc(100vw - 24px));
+  padding: 0;
+
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+
+  background: var(--surface);
+  color: var(--text);
+
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.dialog::backdrop {
+  background: rgba(30, 20, 10, 0.55);
+}
+
+.dialog-body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+
+  padding: 22px;
+}
+
+.dialog-body p {
+  overflow-wrap: anywhere;
+}
+
+.dialog-check {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+
+  min-height: 44px;
+
+  color: var(--label);
+  font-size: 13px;
+}
+
+.dialog-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.dialog-actions .btn {
+  flex: 1 1 auto;
 }
 
 /* 10. Formulários */
@@ -1017,69 +1088,54 @@ footer {
   overflow-wrap: anywhere;
 }
 
-/* 17. Decorações dos temas confeiteiros */
+/* 17. Decorações dos temas
+   O papel de parede de cada tema fica em --bg-pattern (SVG embutido).
+   Nos temas confeiteiros há ainda um babado na barra e um mimo ao lado
+   dos títulos dos cartões. Enfeites têm texto alternativo vazio para
+   leitores de tela; navegadores sem esse recurso usam a 1ª declaração. */
 
-body::before,
-body::after {
-  position: fixed;
-  z-index: 0;
+body:is([data-theme="rosa"], [data-theme="laranja"], [data-theme="roxo"]) .topbar::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  right: 0;
+  left: 0;
+  height: 10px;
 
   pointer-events: none;
-  user-select: none;
 
-  color: var(--green);
-  opacity: 0.13;
-
-  font-size: clamp(36px, 6vw, 76px);
-  line-height: 1;
-
-  content: "";
+  background:
+    radial-gradient(circle at 10px 0, var(--green) 9.5px, transparent 10.5px)
+    0 0 / 20px 10px repeat-x;
 }
 
-body::before {
-  top: 34%;
-  right: 2%;
+.card h3::before {
+  margin-right: 7px;
 }
 
-body::after {
-  bottom: 3%;
-  left: 1%;
+body[data-theme="vanilla"] .card h3::before {
+  content: "🍦";
+  content: "🍦" / "";
 }
 
-/*
- * Segunda declaração de content: o trecho após "/" é o texto alternativo
- * (vazio), para leitores de tela não lerem os enfeites. Navegadores sem
- * esse recurso ignoram a segunda linha e usam a primeira.
- */
-
-body[data-theme="rosa"]::before {
-  content: "🍓 ♡";
-  content: "🍓 ♡" / "";
+body[data-theme="vanilla-dark"] .card h3::before {
+  content: "🌙";
+  content: "🌙" / "";
 }
 
-body[data-theme="rosa"]::after {
-  content: "🎀 🧁";
-  content: "🎀 🧁" / "";
+body[data-theme="rosa"] .card h3::before {
+  content: "🍓";
+  content: "🍓" / "";
 }
 
-body[data-theme="laranja"]::before {
-  content: "🍊 ✧";
-  content: "🍊 ✧" / "";
+body[data-theme="laranja"] .card h3::before {
+  content: "🍊";
+  content: "🍊" / "";
 }
 
-body[data-theme="laranja"]::after {
-  content: "🥄 ♡";
-  content: "🥄 ♡" / "";
-}
-
-body[data-theme="roxo"]::before {
-  content: "💐 ✿";
-  content: "💐 ✿" / "";
-}
-
-body[data-theme="roxo"]::after {
-  content: "🌸 ✧";
-  content: "🌸 ✧" / "";
+body[data-theme="roxo"] .card h3::before {
+  content: "🌸";
+  content: "🌸" / "";
 }
 
 /* Garante que o conteúdo apareça acima das decorações */
@@ -1316,7 +1372,21 @@ footer {
     gap: 12px;
   }
 
-  .section-heading > .btn {
+  .section-heading > .btn,
+  .section-actions,
+  .section-actions .btn {
+    width: 100%;
+  }
+
+  .section-actions {
+    flex-direction: column;
+  }
+
+  .dialog-actions {
+    flex-direction: column;
+  }
+
+  .dialog-actions .btn {
     width: 100%;
   }
 
@@ -1415,11 +1485,6 @@ footer {
     max-width: calc(100vw - 24px);
   }
 
-  body::before,
-  body::after {
-    font-size: 38px;
-    opacity: 0.09;
-  }
 }
 
 /* 21. Celulares muito estreitos */

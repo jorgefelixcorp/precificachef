@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="PrecificaChef: chapéu de chef, livro de receitas e pena">
+  <rect width="512" height="512" rx="0" fill="#76543f"/>
+  <g transform="translate(51.19999999999999 51.19999999999999) scale(0.8)">
+    <!-- livro aberto -->
+    <path d="M84 338 Q172 314 256 346 L256 444 Q172 412 84 436 Z" fill="#d9b98f"/>
+    <path d="M428 338 Q340 314 256 346 L256 444 Q340 412 428 436 Z" fill="#c9a578"/>
+    <path d="M84 322 Q172 298 256 330 L256 428 Q172 396 84 420 Z" fill="#fff8ef"/>
+    <path d="M428 322 Q340 298 256 330 L256 428 Q340 396 428 420 Z" fill="#fffdf9"/>
+    <g stroke="#d8bf9f" stroke-width="5" stroke-linecap="round" fill="none">
+      <path d="M116 350 Q164 336 220 356"/><path d="M116 374 Q164 360 220 380"/><path d="M116 398 Q164 384 220 404"/>
+      <path d="M296 356 Q340 338 396 350"/><path d="M296 380 Q340 362 396 374"/>
+    </g>
+    <path d="M256 330 L256 428" stroke="#b58f64" stroke-width="6"/>
+    <!-- chapéu de chef -->
+    <circle cx="176" cy="168" r="58" fill="#fffdf9"/>
+    <circle cx="336" cy="168" r="58" fill="#fffdf9"/>
+    <circle cx="256" cy="132" r="72" fill="#fffdf9"/>
+    <rect x="164" y="170" width="184" height="86" fill="#fffdf9"/>
+    <rect x="156" y="248" width="200" height="46" rx="14" fill="#f2e4d3"/>
+    <rect x="156" y="248" width="200" height="12" fill="#e4cdb0"/>
+    <path d="M214 176 Q218 214 214 244 M256 168 Q260 210 256 244 M298 176 Q302 214 298 244" stroke="#eadbc9" stroke-width="6" stroke-linecap="round" fill="none"/>
+    <!-- pena -->
+    <g transform="translate(398 330) rotate(36) scale(0.9)">
+      <path d="M0 -168 C52 -124 58 -40 0 44 C-58 -40 -52 -124 0 -168 Z" fill="#f4a9c0"/>
+      <path d="M0 -168 C26 -120 26 -44 0 44 C-10 -44 -10 -124 0 -168 Z" fill="#fcd2df"/>
+      <path d="M0 -150 L0 92" stroke="#76543f" stroke-width="6" stroke-linecap="round"/>
+      <path d="M-5 70 L0 104 L5 70 Z" fill="#3f2c20"/>
+    </g>
+  </g>
+</svg>
