@@ -1,9 +1,12 @@
 <!doctype html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-type="software" data-radius="round" data-buttons="solid" data-motion="subtle">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#76543f">
+  <meta name="page-type" content="software">
+  <meta name="site-kind" content="software">
+  <meta name="description" content="Precifique receitas, organize ingredientes e acompanhe custos diretamente no navegador.">
   <title>PrecificaChef — Precificação culinária</title>
   <link rel="icon" type="image/svg+xml" href="icons/icon.svg">
   <link rel="icon" type="image/png" sizes="32x32" href="icons/png/favicon-32.png">
@@ -65,9 +68,19 @@
         </div>
 
         <div class="card">
-          <div class="section-heading"><div><h3>Ingredientes e custos</h3><p class="muted small">Selecione um ingrediente salvo ou adicione uma linha livre.</p></div><div class="section-actions"><button class="btn btn-light" id="salvar-todos-ingredientes" type="button">＋ Salvar itens nos ingredientes</button><button class="btn btn-primary" id="adicionar-linha">＋ Adicionar linha</button></div></div>
+          <div class="section-heading"><div><h3>Ingredientes e custos</h3><p class="muted small">Selecione um ingrediente salvo ou adicione uma linha livre.</p></div></div>
+          <div class="recipe-summary">
+            <strong class="recipe-summary-title">Resumo da receita</strong>
+            <ul id="resumo-receita" class="recipe-summary-list" aria-label="Ingredientes utilizados" aria-live="polite">
+              <li class="recipe-summary-empty">Os ingredientes usados aparecerão aqui.</li>
+            </ul>
+          </div>
           <div id="linhas-ingredientes" class="ingredient-lines"></div>
           <div class="empty-state" id="linhas-vazias">Nenhum ingrediente adicionado. Clique em “Adicionar linha”.</div>
+          <div class="line-actions">
+            <button class="btn btn-primary" id="adicionar-linha" type="button">＋ Adicionar linha</button>
+            <button class="btn btn-light" id="salvar-todos-ingredientes" type="button">＋ Adicionar todos os ingredientes</button>
+          </div>
         </div>
 
         <div class="card">
@@ -142,6 +155,7 @@
     </form>
   </dialog>
   <div id="toast" role="status" class="toast hidden"></div>
+  <script src="initial-data.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

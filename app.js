@@ -8,6 +8,7 @@
 
     const STORAGE_KEY = "precificachef_v1";
     const STORAGE_SCHEMA_VERSION = 2;
+    const INITIAL_DATA_VERSION = 1;
     const BACKUP_VERSION = 2;
     const MAX_IMPORT_SIZE = 10 * 1024 * 1024;
     const MAX_RECORDS = 5000;
@@ -283,12 +284,20 @@
       const name = textValue(input.name).trim();
       const price = parseMoney(input.price);
       const content = parseMoney(input.content);
+      const hasPrice =
+        input.price !== null &&
+        input.price !== undefined &&
+        String(input.price).trim() !== "";
+      const hasContent =
+        input.content !== null &&
+        input.content !== undefined &&
+        String(input.content).trim() !== "";
 
       if (
         !name ||
-        price === null ||
-        content === null ||
-        content <= 0
+        (hasPrice && price === null) ||
+        (hasContent && (content === null || content <= 0)) ||
+        (price !== null && content === null)
       ) {
         return null;
       }
@@ -452,6 +461,22 @@
         products.push(product);
       }
 
+      const ingredientsById = new Map(
+        ingredients.map((ingredient) => [ingredient.id, ingredient])
+      );
+
+      products.forEach((product) => {
+        product.lines.forEach((line) => {
+          if (!line.ingredientId) return;
+
+          const ingredient = ingredientsById.get(line.ingredientId);
+
+          if (!ingredient || ingredient.name !== line.name) {
+            line.ingredientId = "";
+          }
+        });
+      });
+
       if (diagnostics) {
         diagnostics.invalidIngredients = invalidIngredients;
         diagnostics.invalidProducts = invalidProducts;
@@ -460,12 +485,45 @@
       return { ingredients, products };
     }
 
+    function loadInitialData() {
+      const source = window.PRECIFICACHEF_INITIAL_DATA;
+
+      if (
+        !source ||
+        !Array.isArray(source.ingredients) ||
+        !Array.isArray(source.products)
+      ) {
+        throw new Error("Os dados iniciais do PrecificaChef não foram carregados.");
+      }
+
+      const seeded = normalizeState(source);
+
+      try {
+        localStorage.setItem(
+          STORAGE_KEY,
+          JSON.stringify({
+            schemaVersion: STORAGE_SCHEMA_VERSION,
+            seedVersion: INITIAL_DATA_VERSION,
+            ingredients: seeded.ingredients,
+            products: seeded.products
+          })
+        );
+        loadNotice =
+          "A base do site foi carregada uma vez. As alterações feitas daqui em diante serão mantidas neste navegador.";
+      } catch (error) {
+        console.error("Não foi possível salvar a base inicial.", error);
+        loadNotice =
+          "A base inicial está disponível nesta sessão, mas o navegador não conseguiu salvá-la.";
+      }
+
+      return seeded;
+    }
+
     // =====================================================
     // 4. PERSISTÊNCIA LOCAL E COMPATIBILIDADE
     // =====================================================
 
     function loadState() {
-      const empty = () => ({ ingredients: [], products: [] });
       let raw = null;
 
       try {
@@ -474,12 +532,12 @@
         console.warn("Armazenamento do navegador indisponível.", error);
 
         loadNotice =
-          "O navegador bloqueou o armazenamento local. Seus dados não serão mantidos ao fechar esta página.";
+          "O navegador bloqueou o armazenamento local. Os dados iniciais não serão mantidos ao fechar esta página.";
 
-        return empty();
+        return loadInitialData();
       }
 
-      if (!raw) return empty();
+      if (!raw) return loadInitialData();
 
       try {
         const parsed = JSON.parse(raw);
@@ -491,6 +549,13 @@
           Array.isArray(parsed.ingredients) &&
           Array.isArray(parsed.products)
         ) {
+          if (
+            nonNegativeNumber(parsed.seedVersion) <
+            INITIAL_DATA_VERSION
+          ) {
+            return loadInitialData();
+          }
+
           return normalizeState(parsed);
         }
 
@@ -503,11 +568,10 @@
 
       keepUnreadableCopy(raw);
 
-      return empty();
+      return loadInitialData();
     }
 
-    // Antes de começar vazio, guarda uma cópia do que não pôde ser lido.
-    // Sem isso, o próximo salvamento apagaria esses dados para sempre.
+    // Guarda uma cópia do estado ilegível antes de carregar a base inicial.
     function keepUnreadableCopy(raw) {
       try {
         localStorage.setItem(
@@ -516,7 +580,7 @@
         );
 
         loadNotice =
-          "Os dados salvos neste navegador não puderam ser lidos. Uma cópia foi mantida e o app começou vazio.";
+          "Os dados salvos não puderam ser lidos. Uma cópia foi mantida e a base inicial foi carregada.";
       } catch (error) {
         loadNotice =
           "Os dados salvos neste navegador não puderam ser lidos e podem ser sobrescritos ao salvar.";
@@ -527,6 +591,7 @@
       try {
         const data = {
           schemaVersion: STORAGE_SCHEMA_VERSION,
+          seedVersion: INITIAL_DATA_VERSION,
           ingredients: state.ingredients,
           products: state.products
         };
@@ -683,10 +748,39 @@
           line.name = ingredient.name;
           line.unit = ingredient.unit;
           line.packUnit = ingredient.unit;
-          line.freePrice = String(ingredient.price);
-          line.packSize = String(ingredient.content);
+          line.freePrice =
+            ingredient.price === null ? "" : String(ingredient.price);
+          line.packSize =
+            ingredient.content === null ? "" : String(ingredient.content);
           line.mode = "ingredient";
         }
+      }
+
+      if (key === "unit" && line.ingredientId) {
+        const ingredient = state.ingredients.find(
+          (item) => item.id === line.ingredientId
+        );
+
+        if (ingredient) {
+          if (value === "un") {
+            line.packSize = "1";
+            line.packUnit = "un";
+            line.freePrice =
+              ingredient.price === null ? "" : String(ingredient.price);
+          } else {
+            line.packSize =
+              ingredient.content === null
+                ? ""
+                : String(ingredient.content);
+            line.packUnit = ingredient.unit;
+            line.freePrice =
+              ingredient.price === null ? "" : String(ingredient.price);
+          }
+        }
+      }
+
+      if (key === "unit" && !line.ingredientId) {
+        line.packUnit = value;
       }
 
       if (key === "mode" && value === "direct") {
@@ -695,6 +789,23 @@
 
       renderLines();
       calculate();
+    }
+
+    function updateLineName(line, value) {
+      if (line.ingredientId) {
+        const selectedIngredient = state.ingredients.find(
+          (ingredient) => ingredient.id === line.ingredientId
+        );
+
+        if (
+          !selectedIngredient ||
+          selectedIngredient.name !== textValue(value).trim()
+        ) {
+          line.ingredientId = "";
+        }
+      }
+
+      line.name = value;
     }
 
     function lineCost(line) {
@@ -763,101 +874,110 @@
         const row = document.createElement("div");
         row.className = "ingredient-row";
 
-        const options = state.ingredients.map((ingredient) => {
+        const options = [...state.ingredients]
+          .sort((a, b) => (a.name || "").localeCompare(b.name || "", "pt-BR", { sensitivity: "base" }))
+          .map((ingredient) => {
+          const costLabel =
+            ingredient.price === null || ingredient.content === null
+              ? "Preço pendente"
+              : `${money(ingredient.price)} / ${fmt(ingredient.content)} ${escapeHtml(ingredient.unit)}`;
+
           return `<option value="${escapeHtml(ingredient.id)}"${
             line.ingredientId === ingredient.id ? " selected" : ""
-          }>${escapeHtml(ingredient.name)} — ${money(ingredient.price)} / ${fmt(ingredient.content)} ${escapeHtml(ingredient.unit)}</option>`;
+          }>${escapeHtml(ingredient.name)} — ${costLabel}</option>`;
         }).join("");
 
         const isDirect = line.mode === "direct";
         const cost = lineCost(line);
 
         row.innerHTML = `
-          <label>Ingrediente / descrição
-            <select data-key="ingredientId">
-              <option value="">Linha livre / escolher ingrediente</option>
-              ${options}
-            </select>
-            <input
-              data-key="name"
-              aria-label="Nome ou descrição do ingrediente"
-              value="${escapeHtml(line.name)}"
-              placeholder="Nome ou descrição"
-              autocomplete="off"
-            >
-          </label>
-
-          <label>Quantidade usada
-            <input
-              data-key="quantity"
-              type="number"
-              min="0"
-              step="any"
-              value="${escapeHtml(line.quantity)}"
-              placeholder="Ex.: 50"
-              inputmode="decimal"
-            >
-          </label>
-
-          <label>Unidade usada
-            <select data-key="unit">
-              ${unitOptions(line.unit)}
-            </select>
-          </label>
-
-          <label>
-            ${isDirect
-              ? "Custo por unidade (R$)"
-              : "Preço embalagem (R$)"}
-
-            <input
-              data-key="${isDirect ? "directCost" : "freePrice"}"
-              inputmode="decimal"
-              value="${escapeHtml(
-                isDirect ? line.directCost : line.freePrice
-              )}"
-              placeholder="${isDirect ? "0,50" : "5,99"}"
-            >
-
-            ${!isDirect ? `
+          <div class="line-name">
+            <label>Ingrediente
+              <select data-key="ingredientId">
+                <option value="">Linha livre / escolher ingrediente</option>
+                ${options}
+              </select>
+            </label>
+            <label>Nome
               <input
-                data-key="packSize"
-                aria-label="Conteúdo da embalagem"
+                data-key="name"
+                aria-label="Nome ou descrição do ingrediente"
+                value="${escapeHtml(line.name)}"
+                placeholder="Nome ou descrição"
+                autocomplete="off"
+              >
+            </label>
+          </div>
+
+          <div class="line-usage">
+            <label>Quantidade
+              <input
+                data-key="quantity"
                 type="number"
                 min="0"
                 step="any"
-                value="${escapeHtml(line.packSize)}"
-                placeholder="Conteúdo da embalagem"
+                value="${escapeHtml(line.quantity)}"
+                placeholder="Ex.: 50"
                 inputmode="decimal"
               >
-
-              <select data-key="packUnit" aria-label="Unidade da embalagem">
-                ${unitOptions(line.packUnit)}
+            </label>
+            <label>Unidade
+              <select data-key="unit">
+                ${unitOptions(line.unit)}
               </select>
-            ` : ""}
+            </label>
+          </div>
 
+          <div class="line-pricing">
+            <label>${isDirect ? "Custo / unidade" : "Preço embalagem"}
+              <input
+                data-key="${isDirect ? "directCost" : "freePrice"}"
+                inputmode="decimal"
+                value="${escapeHtml(
+                  isDirect ? line.directCost : line.freePrice
+                )}"
+                placeholder="${isDirect ? "0,50" : "5,99"}"
+              >
+            </label>
+            ${!isDirect ? `
+              <label>Conteúdo
+                <input
+                  data-key="packSize"
+                  aria-label="Conteúdo da embalagem"
+                  type="number"
+                  min="0"
+                  step="any"
+                  value="${escapeHtml(line.packSize)}"
+                  placeholder="Ex.: 1000"
+                  inputmode="decimal"
+                >
+              </label>
+              <label>Unidade do pacote
+                <select data-key="packUnit" aria-label="Unidade da embalagem">
+                  ${unitOptions(line.packUnit)}
+                </select>
+              </label>
+            ` : ""}
+          </div>
+
+          <div class="line-summary">
+            <div class="line-cost">${
+              cost === null ? "Pendente" : money(cost)
+            }</div>
             <button
               class="text-toggle"
               type="button"
               data-action="toggle-mode"
             >${isDirect
-              ? "Usar preço de embalagem"
-              : "Usar custo direto por unidade"}</button>
-
+              ? "Usar embalagem"
+              : "Usar custo direto"}</button>
             ${!isDirect ? `
               <button
                 class="btn btn-light save-line-ingredient"
                 type="button"
                 data-action="save-ingredient"
-              >＋ Salvar nos ingredientes</button>
+              >＋ Salvar ingrediente</button>
             ` : ""}
-          </label>
-
-          <div>
-            <div class="line-cost">${
-              cost === null ? "Pendente" : money(cost)
-            }</div>
-
             <button
               type="button"
               class="icon-btn"
@@ -876,7 +996,15 @@
 
           if (!found) return;
 
-          found[input.dataset.key] = input.value;
+          if (input.dataset.key === "name") {
+            updateLineName(found, input.value);
+
+            if (!found.ingredientId) {
+              row.querySelector('[data-key="ingredientId"]').value = "";
+            }
+          } else {
+            found[input.dataset.key] = input.value;
+          }
 
           calculate();
 
@@ -902,6 +1030,8 @@
             // Só escolher um ingrediente salvo altera os outros campos.
             if (input.dataset.key === "ingredientId") {
               updateLine(line.id, "ingredientId", input.value);
+            } else if (input.dataset.key === "unit") {
+              updateLine(line.id, "unit", input.value);
             } else {
               syncField(input);
             }
@@ -1254,6 +1384,7 @@
       let pending = 0;
 
       const details = [];
+      const recipeItems = [];
 
       lines.forEach((line) => {
         const name = textValue(line.name).trim();
@@ -1268,6 +1399,13 @@
         );
 
         if (!hasData) return;
+
+        const quantity = textValue(line.quantity).trim();
+        if (name) {
+          recipeItems.push(quantity
+            ? `${name} — ${quantity} ${line.unit || ""}`.trim()
+            : name);
+        }
 
         const cost = lineCost(line);
 
@@ -1287,6 +1425,15 @@
           });
         }
       });
+
+      const summary = $("resumo-receita");
+      if (summary) {
+        summary.innerHTML = recipeItems.length
+          ? recipeItems
+              .map((item) => `<li>${escapeHtml(item)}</li>`)
+              .join("")
+          : '<li class="recipe-summary-empty">Os ingredientes usados aparecerão aqui.</li>';
+      }
 
       const watts = num("potencia");
       const minutes = num("tempo-equipamento");
@@ -1624,9 +1771,14 @@
       setValue("ingrediente-marca", ingredient.brand);
       setValue(
         "ingrediente-preco",
-        String(ingredient.price).replace(".", ",")
+        ingredient.price === null
+          ? ""
+          : String(ingredient.price).replace(".", ",")
       );
-      setValue("ingrediente-conteudo", ingredient.content);
+      setValue(
+        "ingrediente-conteudo",
+        ingredient.content === null ? "" : ingredient.content
+      );
 
       setSelectValue(
         "ingrediente-unidade",
@@ -1658,7 +1810,9 @@
           ingredient.brand,
           ingredient.notes
         ].join(" ").toLocaleLowerCase("pt-BR").includes(query);
-      });
+      }).sort((a, b) =>
+        (a.name || "").localeCompare(b.name || "", "pt-BR", { sensitivity: "base" })
+      );
 
       const root = $("lista-ingredientes");
       const empty = $("ingredientes-vazios");
@@ -1666,7 +1820,11 @@
       if (!root || !empty) return;
 
       root.innerHTML = items.map((ingredient) => {
-        const unitCost = ingredient.price / ingredient.content;
+        const hasCompleteCost =
+          ingredient.price !== null && ingredient.content !== null;
+        const unitCost = hasCompleteCost
+          ? ingredient.price / ingredient.content
+          : null;
 
         return `
           <div class="saved-item">
@@ -1679,10 +1837,12 @@
               </h4>
 
               <p>
-                Embalagem: ${money(ingredient.price)} por
-                ${fmt(ingredient.content)} ${escapeHtml(ingredient.unit)}
-                · Custo unitário: ${money(unitCost)} por
-                ${escapeHtml(ingredient.unit)}
+                ${hasCompleteCost
+                  ? `Embalagem: ${money(ingredient.price)} por
+                    ${fmt(ingredient.content)} ${escapeHtml(ingredient.unit)}
+                    · Custo unitário: ${money(unitCost)} por
+                    ${escapeHtml(ingredient.unit)}`
+                  : "Preço pendente — informe o preço e o conteúdo da embalagem"}
                 ${ingredient.notes
                   ? `<br>${escapeHtml(ingredient.notes)}`
                   : ""}
@@ -1690,7 +1850,9 @@
             </div>
 
             <div class="saved-actions">
-              <span class="cost-tag">${money(ingredient.price)}</span>
+              <span class="cost-tag">${
+                hasCompleteCost ? money(ingredient.price) : "Pendente"
+              }</span>
 
               <button
                 type="button"
@@ -2039,7 +2201,11 @@
             ingredients: state.ingredients,
             products: state.products
           },
-          draft: readDraft()
+          draft: readDraft(),
+          recipes: {
+            saved: state.products,
+            currentDraft: readDraft()
+          }
         };
 
         const blob = new Blob(

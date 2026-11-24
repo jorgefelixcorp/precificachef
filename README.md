@@ -9,6 +9,10 @@ Protótipo web de precificação de doces e salgados. Funciona sem IA, sem servi
 - **Produtos salvos:** guarda uma fotografia dos custos no momento em que a receita foi salva.
 - **Armazenamento local:** usa `localStorage` no navegador.
 - **Backup portátil:** exporta/importa ingredientes, produtos salvos e a receita atualmente em edição em um arquivo JSON.
+- **Resumo da receita:** mostra no topo da precificação uma caixa atualizada com cada ingrediente e sua quantidade.
+- **Layout compacto:** linhas de ingredientes, ações e biblioteca usam menos altura para diminuir a rolagem em receitas longas.
+- **Unidade por linha:** permite escolher unidades, gramas, quilogramas, mililitros ou litros em uma linha sem alterar o ingrediente salvo na biblioteca.
+- **Biblioteca alfabética:** os ingredientes cadastrados são apresentados em ordem alfabética.
 - **Salvar ingredientes pela receita:** salva uma linha (ou todas de uma vez) na biblioteca. Se o ingrediente já existir com outro preço ou conteúdo, pergunta se deseja **substituir**, **adicionar como novo** ou **ignorar**.
 - **Embalagem (opcional):** custo de embalagem por unidade, somado ao custo da fornada quando o rendimento é informado.
 - **Categorias:** Doce, Salgado, Pães e Outro.
